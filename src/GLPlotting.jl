@@ -5,18 +5,17 @@ using
     PyPlot,
     PyCall,
     Munging,
-    OpenEphysLoader,
-    GLUtilities
+    OpenEphysLoader
 
-const prd = PyNULL()
+const prp = PyNULL()
 
 function __init__()
-    copy!(prd, pyimport("py_resizabledisplay"))
+    copy!(prp, pyimport("py_resizeable_plots.resizeable_artists"))
 end
 
 export
     # Functions
-    downsamp_oe
+    downsamp_patch
 
 include("downsampplot.jl")
 
