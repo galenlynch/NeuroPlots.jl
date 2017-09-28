@@ -1,0 +1,29 @@
+function plot_spacing(
+    extents::A,
+    spacing::Number = 1.2
+) where {E<:Number, A<:AbstractVector{E}}
+    return spacing * mean(extents)
+end
+function plot_spacing(
+    series::A,
+    args...
+) where {E<:AbstractVector, A<:AbstractVector{E}}
+    return plot_spacing(extent(series), args...)
+end
+
+function plot_offsets(
+    n_line::Number,
+    spacing::Number,
+    offset::Number = 0
+)
+    return spacing * (0:(n_line - 1)) + offset
+end
+function plot_offsets(
+    series::A,
+    offset::Number = 0,
+    args...
+) where {E<:AbstractVector, A<:AbstractVector{E}}
+    n = length(series)
+    spacing = plot_spacing(series, args...)
+    return plot_offsets(n, spacing, offset)
+end

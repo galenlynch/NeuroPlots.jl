@@ -4,7 +4,7 @@ module GLPlotting
 using
     PyPlot,
     PyCall,
-    GLTimeSeries
+    GLTimeseries
 
 const prp = PyNULL()
 
@@ -14,8 +14,11 @@ end
 
 export
     # Functions
-    downsamp_patch
+    downsamp_patch,
+    plot_spacing,
+    plot_offsets
 
+include("util.jl")
 include("downsampplot.jl")
 
 end # module
