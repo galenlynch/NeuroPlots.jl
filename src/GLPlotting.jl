@@ -4,8 +4,7 @@ module GLPlotting
 using
     PyPlot,
     PyCall,
-    Munging,
-    OpenEphysLoader
+    GLTimeSeries
 
 const prp = PyNULL()
 

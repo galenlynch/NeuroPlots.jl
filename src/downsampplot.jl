@@ -60,7 +60,6 @@ function make_cb(a::AbstractVector, fs::Real, offset::Real = 0)
     dts = DynamicTs(a, fs, offset)
     return make_cb(dts)
 end
-make_cb(a::OEContArray, offset::Real = 0) = make_cb(a, a.contfile.header.samplerate, offset)
 
 function downsamp_patch(
     ax::PyObject,
