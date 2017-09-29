@@ -27,3 +27,9 @@ function plot_offsets(
     spacing = plot_spacing(series, args...)
     return plot_offsets(n, spacing, offset)
 end
+function plot_offsets(
+    ::A,
+    args...
+) where {E<:Number, A<:AbstractVector{E}}
+    return 0:0
+end

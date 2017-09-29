@@ -1,4 +1,4 @@
-using GLPlotting, OpenEphysLoader, OEUtilities, PyPlot, GLUtilities, GLTimeseries
+using GLPlotting, PyPlot, GLUtilities, GLTimeseries
 using Base.Test
 
 @testset "GLPlotting"  begin
@@ -15,21 +15,32 @@ using Base.Test
         @test plot_offsets(B) == 0:1.2:1.2
     end
 
-    @testset "indices" begin
-        path = "/home/glynch/Documents/Data/Neural/7108/Singing_2017-07-30_14-15-02/113_CH24.continuous"
-        ior = open(path, "r")
-        const A = SampleArray(ior)
-        dts = DynamicTs(A)
+    const npt = 10000
+    const A = rand(npt)
+    const fs = 100
+
+    @testset "downsampplot" begin
+        dts = CachingDynamicTs(A, fs)
         (xs, ys) = downsamp_req(dts, 0, 1, 10)
-        downsamp_req(dts, 0.0, 1.0, 10.0)
         GLPlotting.to_patch_plot_coords(xs, ys)
         cb = GLPlotting.make_cb(dts)
-        cb = GLPlotting.make_cb(A)
+        cb = GLPlotting.make_cb(A, fs)
         cb(0, 1, 10)
         (fig, ax) = subplots()
-        downsamp_patch(ax, A)
-        ax[:set_xlim]([0, n_points_duration(length(A), A.contfile.header.samplerate)])
+        downsamp_patch(ax, A, fs)
+        ax[:set_xlim]([0, n_points_duration(npt, fs)])
         ax[:set_ylim]([extrema(A)...])
+        plt[:show]()
+    end
+
+    @testset "verticallyspaced" begin
+        fillshape = (2,)
+        B = fill(A, fillshape)
+        fss = fill(fs, fillshape)
+        (fig, ax) = subplots()
+        (artists, xlimits, ylimits, dts, cbs) = plot_vertical_spacing(ax, B, fss)
+        ax[:set_xlim](xlimits)
+        ax[:set_ylim](ylimits)
         plt[:show]()
     end
 end

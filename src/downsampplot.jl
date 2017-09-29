@@ -53,10 +53,16 @@ function to_patch_plot_coords(
 end
 
 "Used for make a callback to view data that does not require the data"
-function make_cb(dts::DynamicTs)
+function make_cb(dts::DynamicDownsampler)
     return (xb, xe, ptmax) -> to_patch_plot_coords(downsamp_req(dts, xb, xe, ptmax)...)
 end
-function make_cb(a::AbstractVector, fs::Real, offset::Real = 0)
+function make_cb(
+    a::AbstractVector,
+    fs::Real,
+    offset::Real = 0,
+    sizehint::Integer = 1000
+)
+    dts = CachingDynamicTs(a, fs, offset, 1000)
     dts = DynamicTs(a, fs, offset)
     return make_cb(dts)
 end
@@ -64,16 +70,40 @@ end
 function downsamp_patch(
     ax::PyObject,
     cb::Function,
+    xbounds::NTuple{2, I},
+    ybounds::NTuple{2, I},
     plotlines::Vector{PyObject},
-    plotpatch::PyObject,
-)
+    plotpatch::PyObject
+) where I <: Real
     ax[:set_autoscale_on](false)
-    rd = prp[:ResizeablePatch](cb, push!(plotlines, plotpatch)) # graph objects must be vector
-    ax[:callbacks][:connect]("xlim_changed", rd[:update])
+    artists = push!(plotlines, plotpatch)
+    rartist = prp[:ResizeablePatch](cb, artists, xbounds, ybounds) # graph objects must be vector
+    ax[:callbacks][:connect]("xlim_changed", rartist[:update])
+    ax[:callbacks][:connect]("ylim_changed", rartist[:update])
+    return rartist
 end
-function downsamp_patch(ax::PyObject, cb::Function)
-    plotlines = make_dummy_line(2, ax)
+function downsamp_patch(
+    ax::PyObject,
+    cb::Function,
+    xbounds::NTuple{2, I},
+    ybounds::NTuple{2, I},
+    plotargs...;
+    plotkwargs...
+) where I <: Real
+    plotlines = make_dummy_line(2, ax, plotargs...; plotkwargs...)
     plotpatch = make_fill(ax, plotlines...)
-    return downsamp_patch(ax, cb, plotlines, plotpatch)
+    return downsamp_patch(ax, cb, xbounds, ybounds, plotlines, plotpatch)
 end
-downsamp_patch(ax::PyObject, args...) = downsamp_patch(ax, make_cb(args...))
+function downsamp_patch(
+    ax::PyObject,
+    a::AbstractVector,
+    fs::Real,
+    offset::Real = 0,
+    args...;
+    kwargs...
+)
+    cb = make_cb(a, fs, offset)
+    xbounds = duration(a, fs, offset)
+    ybounds = extrema(a)
+    downsamp_patch(ax, cb, xbounds, ybounds, args...; kwargs...)
+end
