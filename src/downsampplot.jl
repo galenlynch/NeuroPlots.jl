@@ -54,7 +54,8 @@ end
 
 "Used for make a callback to view data that does not require the data"
 function make_cb(dts::DynamicDownsampler)
-    return (xb, xe, ptmax) -> to_patch_plot_coords(downsamp_req(dts, xb, xe, ptmax)...)
+    f = (xb, xe, ptmax) -> to_patch_plot_coords(downsamp_req(dts, xb, xe, ptmax)...)
+    return f::Function
 end
 function make_cb(
     a::AbstractVector,
@@ -79,7 +80,6 @@ function downsamp_patch(
     ax[:set_autoscale_on](false)
     artists = push!(plotlines, plotpatch)
     rartist = prp[:ResizeablePatch](ax, cb, artists, xbounds, ybounds) # graph objects must be vector
-    println(listen_ax)
     for lax in listen_ax
         lax[:callbacks][:connect]("xlim_changed", rartist[:update])
         lax[:callbacks][:connect]("ylim_changed", rartist[:update])
@@ -102,8 +102,8 @@ end
 function downsamp_patch(
     ax::PyObject,
     a::AbstractVector,
-    fs::Real,
-    offset::Real = 0,
+    fs,
+    offset = zero(fs),
     listen_ax::Vector{PyObject} = [ax],
     args...;
     kwargs...
