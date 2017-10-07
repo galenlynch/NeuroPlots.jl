@@ -1,3 +1,10 @@
+"""
+    plot_vertical_spacing
+
+plot a vector of signals with equal y-spacing between them.
+
+The spacing between signals is calculated from y-extent of the signals.
+"""
 function plot_vertical_spacing(
     ax::PyObject,
     As::A,
@@ -72,31 +79,3 @@ function plot_vertical_spacing(
     return (patchartists, global_x, global_y)
 end
 
-function plot_multi_patch(
-    ax::PyObject,
-    cbs::Vector{Function},
-    xbs::Vector{NTuple{2, I}},
-    ybs::Vector{NTuple{2, J}},
-    listen_ax::Vector{PyObject} = [ax]
-) where {I<:Real, J<:Real}
-    na = length(cbs)
-    indicies = mod.(0:(na - 1), 10) # for Python consumption, base zero
-    colorargs = ["C$n" for n in indicies]
-    patchartists = Vector{PyObject}(na)
-    for i in 1:na
-        patchartists[i] = downsamp_patch(ax, cbs[i], xbs[i], ybs[i], listen_ax, colorargs[i])
-    end
-    return patchartists
-end
-function plot_multi_patch(
-    ax::PyObject,
-    dts::A,
-    args...
-) where {D <: DynamicDownsampler, A<:AbstractVector{D}}
-    cbs = Array{Function}(length(dts))
-    for (i, dt) in enumerate(dts)
-        cbs[i] = make_cb(dt)
-        cbs[i](0, 0, 10)
-    end
-    plot_multi_patch(ax, cbs, args...)
-end

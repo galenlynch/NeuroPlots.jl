@@ -1,4 +1,3 @@
-"Used for make a callback to view data that does not require the data"
 function clipval(a::AbstractArray, c::NTuple{2, R}) where {R<:Number}
     a[a.<c[1]] = c[1]
     a[a.>c[2]] = c[2]
@@ -7,6 +6,14 @@ end
 noop(args...;kwargs...) = nothing
 p2db(a::Number) = 10 * log10(a)
 
+"""
+    make_spec_cb
+
+Create a closure of the form f(xb, xe, npt) -> (s, f, t, cl)
+
+This callback can be called from python without using the DynamicSpectrogram
+object.
+"""
 function make_spec_cb(
     ds::DynamicSpectrogram,
     clim::AbstractVector = [],
@@ -49,6 +56,13 @@ function make_spec_cb(
     dts = DynamicSpectrogram(a, fs, offset, window)
     return make_spec_cb(dts, clim, frange)
 end
+
+"""
+    resizeable_spectrogram
+
+plot a resizeable spectrogram of a signal in a matplotlib axis
+"""
+function resizeable_spectrogram end
 
 function resizeable_spectrogram(
     ax::PyObject,

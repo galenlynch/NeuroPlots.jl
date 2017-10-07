@@ -1,6 +1,8 @@
 # GLPlotting
 
-A set of tools to drive matplotlib with julia functions
+A set of utilities to plot with matplotlib in Julia
+
+top level functions: `resizeable_spectrogram`, `downsamp_patch`, `plot_multi_patch`, `plot_vertical_spacing`
 
 Requires [py_resizabledisplay](https://bitbucket.org/feelab/py_resizabledisplay) to be installed with Conda
 
