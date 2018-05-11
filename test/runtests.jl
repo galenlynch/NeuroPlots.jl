@@ -10,9 +10,9 @@ using Base.Test
         @test plot_spacing(C, 0) == 0
         @test plot_spacing(B) == 1.2
 
-        @test plot_offsets(2, 1) == 0:1
-        @test plot_offsets(2, 1, 1) == 1:2
-        @test plot_offsets(B) == 0:1.2:1.2
+        @test plot_offsets(2, 1) == collect(0:1)
+        @test plot_offsets(2, 1, 1) == collect(1:2)
+        @test plot_offsets(B) == collect(0:1.2:1.2)
     end
 
     const npt = 10000

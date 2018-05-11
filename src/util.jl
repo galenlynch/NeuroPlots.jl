@@ -1,8 +1,14 @@
+"""
+    plot_spacing(extents[, scale_factor = 1.2])
+
+Calculate the spacing between dataseries for plotting, which is the mean of the
+extents times an optional scale factor.
+"""
 function plot_spacing(
     extents::A,
-    spacing::Number = 1.2
+    scale_factor::Number = 1.2
 ) where {E<:Number, A<:AbstractVector{E}}
-    return spacing * mean(extents)
+    return scale_factor * mean(extents)
 end
 function plot_spacing(
     series::A,
@@ -11,6 +17,13 @@ function plot_spacing(
     return plot_spacing(extent(series), args...)
 end
 
+"""
+    plot_offsets(n_line, spacing[, offset = 0])
+
+Calculate the offset for each of `n_line` number of plots with `spacing` in
+between them. Optionally start the first line at `offset`.
+"""
+function plot_offsets end
 function plot_offsets(
     n_line::Integer,
     spacing::A,
@@ -37,5 +50,5 @@ function plot_offsets(
     ::A,
     args...
 ) where {E<:Number, A<:AbstractVector{E}}
-    return 0:0
+    return E[0]
 end
