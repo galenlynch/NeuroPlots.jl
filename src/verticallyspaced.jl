@@ -97,7 +97,7 @@ function plot_vertical_spacing(
         linewidth = linewidth, toplevel = false
     )
     y_expansion = y_spacing * 0.1
-    expanded_ybounds = (global_y[1] - y_expansion, global_y[2] + y_expansion)
+    expanded_ybounds = (y_bounds[1] - y_expansion, y_bounds[2] + y_expansion)
     if toplevel
         ax[:set_ylim]([expanded_ybounds...])
         ax[:set_xlim]([x_bounds...])

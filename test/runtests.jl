@@ -53,6 +53,10 @@ using Base.Test
         (fig, ax) = subplots()
         (artists, xlimits, ylimits) = plot_vertical_spacing(ax, B, fss)
         plt[:show]()
+        cla()
+        dynamic_tss = fill(dts, fillshape)
+        (artists, xlimits, ylimits) = plot_vertical_spacing(ax, dynamic_tss)
+        plt[:show]()
     end
 
     @testset "spectrogram" begin
