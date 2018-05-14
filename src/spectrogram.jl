@@ -11,8 +11,8 @@ function resizeable_spectrogram(
     xbounds::NTuple{2, I},
     ybounds::NTuple{2, J},
     listen_ax::Vector{PyObject} = [ax];
-    clim::AbstractVector = [],
-    frange::AbstractVector = [],
+    clim::AbstractVector{<:Real} = Vector{Float64}(),
+    frange::AbstractVector{<:Real} = Vector{Float64}(),
     cmap::AbstractString = "viridis",
     toplevel::Bool = true
 ) where {I <: Real, J <: Real}
@@ -35,7 +35,7 @@ function resizeable_spectrogram(
     fs::Real,
     offset::Real = 0,
     args...;
-    frange::AbstractVector = [],
+    frange::AbstractVector{<:Real} = Vector{Float64}(),
     window::Array{Float64} = hanning(512),
     kwargs...
 )
