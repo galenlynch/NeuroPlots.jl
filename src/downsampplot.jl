@@ -25,6 +25,7 @@ function downsamp_patch(
     update_fnc(ax)
     return rpatch
 end
+
 function downsamp_patch(
     ax::PyObject,
     dts::DynamicDownsampler,
@@ -41,6 +42,7 @@ function downsamp_patch(
         toplevel = toplevel
     )
 end
+
 function downsamp_patch(
     ax::PyObject,
     a::AbstractVector,
@@ -109,6 +111,7 @@ struct ResizeablePatch{T<:DynamicDownsampler} <: ResizeableArtist
     dts::T
     baseinfo::RABaseInfo
 end
+
 function ResizeablePatch(dts::DynamicDownsampler, args...; kwargs...)
     return ResizeablePatch(dts, RABaseInfo(args...; kwargs...))
 end
