@@ -33,6 +33,21 @@ mutable struct RABaseInfo
         )
     end
 end
+
+function RABaseInfo(
+    ax::PyObject,
+    a::AbstractVector{PyObject},
+    limx::NTuple{2, Real},
+    limy::NTuple{2, Real}
+)
+    return RABaseInfo(
+        ax,
+        a,
+        convert(NTuple{2, Float64}, limx),
+        convert(NTuple{2, Float64}, limy)
+    )
+end
+
 function RABaseInfo(ax::PyObject, artist::PyObject, args...)
     return RABaseInfo(ax, [artist], args...)
 end
