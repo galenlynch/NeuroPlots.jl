@@ -33,8 +33,9 @@ function plot_multi_patch(
     patchartists = Vector{ResizeablePatch}(na)
     for i in 1:na
         patchartists[i] = downsamp_patch(ax, dts[i], colorargs[i]; plotkwargs...)
-        connect_callbacks(ax, patchartists[i], listen_ax; toplevel = toplevel)
     end
+    ad = ArtDirector(patchartists)
+    connect_callbacks(ax, ad, listen_ax; toplevel = toplevel)
     if toplevel
         xbs = xbounds.(patchartists)
         ybs = ybounds.(patchartists)
@@ -97,12 +98,12 @@ function fill_points(xs, ys, was_downsampled)
     end
     return (xpts, ypts)
 end
-
-function update_plotdata(ra::ResizeablePatch, xstart, xend, pixwidth)
-    (xpt, ypt) = fill_points(downsamp_req(ra.dts, xstart, xend, pixwidth)...)
+function plotdata_fnc(ra::ResizeablePatch, xstart, xend, pixwidth)
+    () -> fill_points(downsamp_req(ra.dts, xstart, xend, pixwidth)...)
+end
+function update_artists(ra::ResizeablePatch, xpt, ypt)
     ra.baseinfo.artists[1][:set_data](xpt, ypt)
 end
-
 
 "Make a line with place-holder data"
 function make_dummy_line(ax::PyObject, plotargs...; plotkwargs...)

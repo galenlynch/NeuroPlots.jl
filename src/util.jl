@@ -57,3 +57,20 @@ function plot_offsets(
 ) where {E<:Number, A<:AbstractVector{E}}
     return E[0]
 end
+
+function ax_pix_width(ax::PyObject)
+    fig = ax[:figure]::PyPlot.Figure
+    scale = fig[:dpi_scale_trans][:inverted]()::PyObject
+    bbox = ax[:get_window_extent]()[:transformed](scale)::PyObject
+
+    width = bbox[:width]::Float64
+    dpi = fig[:dpi]::Float64
+
+    return width * dpi
+end
+
+function axis_limits(ax::PyObject, intervalfcn::Symbol=:intervalx)
+    lims = ax[:viewLim]::PyObject
+    (limstart, limend) = lims[intervalfcn]::Vector{Float64}
+    return (limstart, limend)
+end

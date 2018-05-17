@@ -65,29 +65,6 @@ end
 
 ratiodiff(a, b) = abs(a - b) / (b + eps(b))
 
-function ax_pix_size(ax::PyObject)
-    fig = ax[:figure]::PyPlot.Figure
-    scale = fig[:dpi_scale_trans][:inverted]()::PyObject
-    bbox = ax[:get_window_extent]()[:transformed](scale)::PyObject
-
-    width = bbox[:width]::Float64
-    height = bbox[:height]::Float64
-    dpi = fig[:dpi]::Float64
-
-    pixwidth = width * dpi
-    pixheight = height * dpi
-    return (pixwidth, pixheight)
-end
-
-function axis_limits(notifying_ax::PyObject, artist_ax::PyObject)
-    lims_notifying = notifying_ax[:viewLim]::PyObject
-    (xstart, xend) = lims_notifying[:intervalx]::Vector{Float64}
-    lims_artist = artist_ax[:viewLim]::PyObject
-    (ystart, yend) = lims_artist[:intervaly]::Vector{Float64}
-    return (xstart, xend, ystart, yend)
-end
-axis_limits(ax::PyObject) = axis_limits(ax, ax)
-
 function artist_is_visible(ra::ResizeableArtist, xstart, xend, ystart, yend)
     xoverlap = check_overlap(
         xstart, xend, ra.baseinfo.datalimx[1], ra.baseinfo.datalimx[2]
@@ -98,41 +75,45 @@ function artist_is_visible(ra::ResizeableArtist, xstart, xend, ystart, yend)
     return xoverlap && yoverlap
 end
 
-function artist_should_redraw(ra::ResizeableArtist, limwidth, limcenter)
-    width_rd = ratiodiff(limwidth, ra.baseinfo.lastlimwidth)
-    center_rd = ratiodiff(limcenter, ra.baseinfo.lastlimcenter)
-    return max(width_rd, center_rd) > ra.baseinfo.threshdiff
-end
-
-function axis_lim_changed(ra::ResizeableArtist, notifying_ax::PyObject)
-    (xstart, xend, ystart, yend) = axis_limits(notifying_ax, ra.baseinfo.ax)
-    if artist_is_visible(ra, xstart, xend, ystart, yend)
-        limwidth = xend - xstart
-        limcenter = (xend + xstart) / 2
-        if artist_should_redraw(ra, limwidth, limcenter)
-            ra.baseinfo.lastlimwidth = limwidth
-            ra.baseinfo.lastlimcenter = limcenter
-            (pixwidth, pixheight) = ax_pix_size(notifying_ax)
-            update_plotdata(ra, xstart, xend, pixwidth)
-            ra.baseinfo.ax[:figure][:canvas][:draw_idle]()
-        end
-    end
-end
-
-function connect_callbacks(
-    ax::PyObject,
+function artist_should_redraw(
     ra::ResizeableArtist,
-    listen_ax::Vector{PyObject} = [ax];
-    toplevel::Bool = true
+    xstart,
+    xend,
+    limwidth = xend - xstart,
+    limcenter = (xend + xstart) / 2
 )
-    ax[:set_autoscale_on](false)
-    toplevel && set_ax_home(ra)
-    update_fnc = (x) -> axis_lim_changed(ra, x)
-    for lax in listen_ax
-        conn_fnc = lax[:callbacks][:connect]::PyCall.PyObject
-        conn_fnc("xlim_changed", update_fnc)
-        conn_fnc("ylim_changed", update_fnc) # TODO: Is this necessary?
+    (ystart, yend) = axis_limits(ra.baseinfo.ax, :intervaly)
+    if artist_is_visible(ra, xstart, xend, ystart, yend)
+        width_rd = ratiodiff(limwidth, ra.baseinfo.lastlimwidth)
+        center_rd = ratiodiff(limcenter, ra.baseinfo.lastlimcenter)
+        redraw = max(width_rd, center_rd) > ra.baseinfo.threshdiff
+    else
+        redraw = false
     end
-    update_fnc(ax)
-    return ra
+    return redraw
+end
+
+function maybe_redraw(ra::ResizeableArtist, xstart, xend, px_width)
+    limwidth = xend - xstart
+    limcenter = (xend + xstart) / 2
+    if artist_should_redraw(ra, xstart, xend, limwidth, limcenter)
+        ra.baseinfo.lastlimwidth = limwidth
+        ra.baseinfo.lastlimcenter = limcenter
+        update_plotdata(ra, xstart, xend, px_width)
+        ra.baseinfo.ax[:figure][:canvas][:draw_idle]()
+    end
+end
+
+function update_plotdata(ra::ResizeableArtist, xstart, xend, pixwidth)
+    datafcn = plotdata_fnc(ra, xstart, xend, pixwidth)
+    data = datafcn()
+    update_artists(ra, data...)
+end
+
+function update_plotdata(ras::Vector{<:ResizeableArtist}, xstart, xend, pixwidth)
+    datafncs = plotdata_fnc.(ras, xstart, xend, pixwidth)
+    all_data = pmap((f) -> f(), datafncs)
+    for (i, data) in enumerate(all_data)
+        udpate_artists(ras[i], data...)
+    end
 end
