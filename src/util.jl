@@ -58,25 +58,26 @@ function plot_offsets(
     return E[0]
 end
 
-function ax_pix_width(ax::PyObject)
-    fig = ax[:figure]::PyPlot.Figure
+function ax_pix_width(ax::A) where {P<:MPL, A<:Axis{P}}
+    fig = ax.ax[:figure]::PyPlot.Figure
     scale = fig[:dpi_scale_trans][:inverted]()::PyObject
-    bbox = ax[:get_window_extent]()[:transformed](scale)::PyObject
+    bbox = ax.ax[:get_window_extent]()[:transformed](scale)::PyObject
 
     width = bbox[:width]::Float64
     dpi = fig[:dpi]::Float64
 
     return width * dpi
 end
+function axis_limits(ax::A) where {P<:MPL, A<:Axis{P}}
+    ax.ax[:viewLim]::PyObject
+end
 
-axis_limits(ax::PyObject) = ax[:viewLim]::PyObject
-
-function axis_xlim(ax::PyObject)
+function axis_xlim(ax::A) where {P<:MPL, A<:Axis{P}}
     bbox = axis_limits(ax)
     return (bbox[:xmin]::Float64, bbox[:xmax]::Float64)
 end
 
-function axis_ylim(ax::PyObject)
+function axis_ylim(ax::A) where {P<:MPL, A<:Axis{P}}
     bbox = axis_limits(ax)
     return (bbox[:ymin]::Float64, bbox[:ymax]::Float64)
 end

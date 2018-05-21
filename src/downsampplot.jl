@@ -4,12 +4,12 @@
 Plot a signal as two lines and a fill_between polygon
 """
 function downsamp_patch(
-    ax::PyObject,
+    ax::A,
     args...;
-    listen_ax::Vector{PyObject} = [ax],
+    listen_ax::Vector{A} = [ax],
     toplevel::Bool = true,
     kwargs...
-)
+) where {P<:PlotLib, A<:Axis{P}}
     rpatch = ResizeablePatch(ax, args...; kwargs...)
     connect_callbacks(ax, rpatch, listen_ax; toplevel = toplevel)
     return rpatch
@@ -21,16 +21,16 @@ end
 Plot a list of DownSampler objects
 """
 function plot_multi_patch(
-    ax::PyObject,
-    dts::AbstractVector{<:DynamicDownsampler},
-    listen_ax::Vector{PyObject} = [ax];
+    ax::A,
+    dts::AbstractVector{T},
+    listen_ax::Vector{A} = [ax];
     toplevel = true,
     plotkwargs...
-)
+) where {P<:PlotLib, A<:Axis{P}, T<:DynamicDownsampler}
     na = length(dts)
     indicies = mod.(0:(na - 1), 10) # for Python consumption, base zero
     colorargs = ["C$n" for n in indicies]
-    patchartists = Vector{ResizeablePatch}(na)
+    patchartists = Vector{ResizeablePatch{T,P}}(na)
     for i in 1:na
         patchartists[i] = downsamp_patch(ax, dts[i], colorargs[i]; plotkwargs...)
     end
@@ -41,24 +41,28 @@ function plot_multi_patch(
         ybs = ybounds.(patchartists)
         global_x = extrema_red(xbs)
         global_y = extrema_red(ybs)
-        ax[:set_ylim]([global_y...])
-        ax[:set_xlim]([global_x...])
+        ax.ax[:set_ylim]([global_y...])
+        ax.ax[:set_xlim]([global_x...])
     end
     return ad, patchartists
 end
 
-struct ResizeablePatch{T<:DynamicDownsampler} <: ResizeableArtist{T}
+struct ResizeablePatch{T<:DynamicDownsampler, P<:PlotLib} <: ResizeableArtist{T,P}
     dts::T
     baseinfo::RABaseInfo
 end
 downsampler(r::ResizeablePatch) = r.dts
 baseinfo(r::ResizeablePatch) = r.baseinfo
 
+function ResizeablePatch(dts::T, ra::R) where
+    {T<:DynamicDownsampler,P,R<:RABaseInfo{P}}
+    ResizeablePatch{T,P}(dts, ra)
+end
 function ResizeablePatch(dts::DynamicDownsampler, args...; kwargs...)
     return ResizeablePatch(dts, RABaseInfo(args...; kwargs...))
 end
 function ResizeablePatch(
-    ax::PyObject,
+    ax::Axis,
     dts::DynamicDownsampler,
     args...;
     plotargs::Vector{Any} = [],
@@ -69,7 +73,7 @@ function ResizeablePatch(
     return ResizeablePatch(dts, ax, artists, duration(dts), extrema(dts))
 end
 function ResizeablePatch(
-    ax::PyObject,
+    ax::Axis,
     a::AbstractVector,
     fs,
     offset = zero(fs),
@@ -83,7 +87,13 @@ end
 
 function fill_points(
     xs::A, ys::B, was_downsampled::Bool
-) where {X<:Number, A<:AbstractVector{X}, Y<:Number, T<:NTuple{2, Y}, B<:AbstractVector{T}}
+) where {
+    X<:Number,
+    A<:AbstractVector{X},
+    Y<:Number,
+    T<:NTuple{2, Y},
+    B<:AbstractVector{T}
+}
     if was_downsampled
         npt = 2 * length(xs)
         xpts = Vector{X}(npt)
@@ -111,11 +121,13 @@ function make_plotdata(
     fill_points(downsamp_req(dts, xstart, xend, pixwidth)...)
 end
 
-function update_artists(ra::ResizeablePatch, xpt, ypt)
-    ra.baseinfo.artists[1][:set_data](xpt, ypt)
+function update_artists(ra::R, xpt, ypt) where
+    {P<:MPL, T, R<:ResizeablePatch{T,P}}
+    ra.baseinfo.artists[1].artist[:set_data](xpt, ypt)
 end
 
 "Make a line with place-holder data"
-function make_dummy_line(ax::PyObject, plotargs...; plotkwargs...)
-    return ax[:plot](0, 0, plotargs...; plotkwargs...)[1]::PyObject
+function make_dummy_line(ax::A, plotargs...; plotkwargs...) where
+    {P<:MPL, A<:Axis{P}}
+    return Artist{P}(ax.ax[:plot](0, 0, plotargs...; plotkwargs...)[1])
 end

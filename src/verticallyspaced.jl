@@ -6,13 +6,13 @@ plot a vector of signals with equal y-spacing between them.
     The spacing between signals is calculated from y-extent of the signals.
     """
 function plot_vertical_spacing(
-    ax::PyObject,
+    ax::B,
     ts::A;
-    listen_ax::Vector{PyObject} = [ax],
+    listen_ax::Vector{B} = [ax],
     y_spacing::Real = -1, # automatic if less than zero
     linewidth::Number = 2,
     toplevel::Bool = true
-) where {E, D<:DynamicDownsampler{E}, A<:AbstractVector{D}}
+) where {P<:MPL,B<:Axis{P},E, D<:DynamicDownsampler{E}, A<:AbstractVector{D}}
     nts = length(ts)
     if y_spacing < 0
         if nts > 1
@@ -37,14 +37,14 @@ function plot_vertical_spacing(
         yb = (extrema(mts[1])[1], extrema(mts[end])[2])
         y_expansion = y_spacing * 0.1
         expanded_ybounds = (yb[1] - y_expansion, yb[2] + y_expansion)
-        ax[:set_ylim]([expanded_ybounds...])
-        ax[:set_xlim]([xb...])
+        ax.ax[:set_ylim]([expanded_ybounds...])
+        ax.ax[:set_xlim]([xb...])
     end
     return ad, patchartists
 end
 
 function plot_vertical_spacing(
-    ax::PyObject,
+    ax::Axis,
     As::A,
     fss::AbstractVector,
     offsets::AbstractVector = [],

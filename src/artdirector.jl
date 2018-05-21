@@ -1,15 +1,15 @@
-struct ArtDirector{R<:ResizeableArtist, S<:ParallelSpeed}
+struct ArtDirector{E, P<:PlotLib, R<:ResizeableArtist{E,P}, S<:ParallelSpeed}
     artists::Vector{R}
-    axes::Vector{PyObject}
+    axes::Vector{Axis{P}}
     limx::Vector{NTuple{2, Float64}}
     limy::Vector{NTuple{2, Float64}}
     jobchannel::RemoteChannel{Channel{Tuple{Int, FuncCall}}}
     datachannel::RemoteChannel{Channel{Tuple{Int, Vector{Float64}, Vector{Float64}}}}
     pspeeds::Vector{S}
-    function ArtDirector{R,S}(artists::Vector{R}, pspeeds::Vector{S}) where
-        {R<:ResizeableArtist, S<:ParallelSpeed}
+    function ArtDirector{E,P,R,S}(artists::Vector{R}, pspeeds::Vector{S}) where
+        {E, P<:PlotLib, R<:ResizeableArtist{E,P}, S<:ParallelSpeed}
         nartist = length(artists)
-        allaxes = Vector{PyObject}(nartist)
+        allaxes = Vector{Axis{P}}(nartist)
         allxlim = Vector{NTuple{2, Float64}}(nartist)
         allylim = Vector{NTuple{2, Float64}}(nartist)
         for (i, ra) in enumerate(artists)
@@ -26,8 +26,12 @@ struct ArtDirector{R<:ResizeableArtist, S<:ParallelSpeed}
             limx[i] = extrema_red(allxlim[matchmask])
             limy[i] = extrema_red(allylim[matchmask])
         end
-        jobchannel = RemoteChannel(()->Channel{Tuple{Int, FuncCall}}(100))
-        datachannel = RemoteChannel(()->Channel{Tuple{Int, Vector{Float64}, Vector{Float64}}}(100))
+        jobchannel = RemoteChannel(
+            ()->Channel{Tuple{Int, FuncCall}}(100)
+        )
+        datachannel = RemoteChannel(
+            ()->Channel{Tuple{Int, Vector{Float64}, Vector{Float64}}}(100)
+        )
         for p in workers()
             @async remote_do(do_work, p, jobchannel, datachannel)
         end
@@ -35,15 +39,18 @@ struct ArtDirector{R<:ResizeableArtist, S<:ParallelSpeed}
     end
 end
 function ArtDirector(a::AbstractVector{R}, s::AbstractVector{S}) where
-    {R<:ResizeableArtist, S<:ParallelSpeed}
-    return ArtDirector{R, S}(convert(Vector{R}, a), convert(Vector{S}, s))
+    {
+        E, P<:PlotLib, R<:ResizeableArtist{E,P},
+        S<:ParallelSpeed
+    }
+    return ArtDirector{E,P,R,S}(convert(Vector{R}, a), convert(Vector{S}, s))
 end
 ArtDirector(a::AbstractVector{<:ResizeableArtist}) = ArtDirector(a, ParallelSpeed.(a))
 
 function set_ax_home(a::ArtDirector)
     for (i, ax) in enumerate(a.axes)
-        ax[:set_xlim]([a.xlim[i]...])
-        ax[:set_ylim]([a.ylim[i]...])
+        ax.ax[:set_xlim]([a.xlim[i]...])
+        ax.ax[:set_ylim]([a.ylim[i]...])
     end
 end
 
@@ -58,7 +65,7 @@ end
 
 function axis_lim_changed(
     ra::Union{ResizeableArtist, ArtDirector},
-    notifying_ax::PyObject
+    notifying_ax::Axis
 )
     (xstart, xend) = axis_xlim(notifying_ax)
     pixwidth = ax_pix_width(notifying_ax)
@@ -92,7 +99,7 @@ function maybe_redraw(
     )
     if ! isempty(artists_to_redraw)
         for ax in ad.axes
-            ax[:figure][:canvas][:draw_idle]()
+            ax.ax[:figure][:canvas][:draw_idle]()
         end
     end
 end

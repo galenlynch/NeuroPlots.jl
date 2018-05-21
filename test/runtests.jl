@@ -31,7 +31,7 @@ using Base.Test
             [1, 2],
             [1, 3]
         )
-        ax = gca()
+        ax = Axis{MPL}(gca())
         try
             lineartist = GLPlotting.make_dummy_line(ax)
             rabase = GLPlotting.RABaseInfo(ax, lineartist, (0.0, 1.0), (0.0, 1.0))
@@ -49,6 +49,7 @@ using Base.Test
     @testset "downsampplot" begin
         (xs, ys, was_downsamped) = downsamp_req(dts, 0, 1, 10)
         (fig, ax) = subplots()
+        ax = Axis{MPL}(ax)
         try
             rp = downsamp_patch(ax, dts)
             plt[:show]()
@@ -63,12 +64,14 @@ using Base.Test
         B = fill(A, fillshape)
         fss = fill(fs, fillshape)
         (fig, ax) = subplots()
+        ax = Axis{MPL}(ax)
         try
             artists = plot_vertical_spacing(ax, B, fss)
         finally
             close()
         end
         (fig, ax) = subplots()
+        ax = Axis{MPL}(ax)
         try
             dynamic_tss = fill(dts, fillshape)
             artists = plot_vertical_spacing(ax, dynamic_tss)
@@ -82,6 +85,7 @@ using Base.Test
     @testset "spectrogram" begin
         const B = sin.(2 * pi * 10 .* (1:npt) ./ fs) .+ 0.1 .* randn(npt)
         (fig, ax) = subplots()
+        ax = Axis{MPL}(ax)
         try
             rspec = resizeable_spectrogram(ax, B, fs)
             plt[:show]()
@@ -90,18 +94,20 @@ using Base.Test
             rethrow()
         end
         (fig, ax) = subplots()
+        ax = Axis{MPL}(ax)
         try
             rspec = resizeable_spectrogram(ax, B, fs, 0, frange = [7, 13])
-            colorbar(rspec.baseinfo.artists[1])
+            colorbar(rspec.baseinfo.artists[1].artist)
             plt[:show]()
         catch
             close()
             rethrow()
         end
         (fig, ax) = subplots()
+        ax = Axis{MPL}(ax)
         try
             rspec = resizeable_spectrogram(ax, B, fs, 0, frange = [7, 13], clim = [-20, 0])
-            colorbar(rspec.baseinfo.artists[1])
+            colorbar(rspec.baseinfo.artists[1].artist)
             plt[:show]()
         catch
             close()

@@ -2,26 +2,26 @@
 Base type for resizeable artists, must implement a setdata method and have a
 baseinfo field"
 """
-abstract type ResizeableArtist{E<:DynamicDownsampler} end
+abstract type ResizeableArtist{E<:DynamicDownsampler, P<:PlotLib} end
 
-mutable struct RABaseInfo
-    ax::PyObject
-    artists::Vector{PyObject}
+mutable struct RABaseInfo{P<:PlotLib}
+    ax::Axis{P}
+    artists::Vector{Artist{P}}
     datalimx::NTuple{2, Float64}
     datalimy::NTuple{2, Float64}
     threshdiff::Float64
     lastlimwidth::Float64
     lastlimcenter::Float64
 
-    function RABaseInfo(
-    ax::PyObject,
-    artists::Vector{PyObject},
+    function RABaseInfo{P}(
+    ax::Axis{P},
+    artists::Vector{Artist{P}},
     datalimx::NTuple{2, Float64},
     datalimy::NTuple{2, Float64},
     threshdiff::Float64 = 0.0,
     lastlimwidth::Float64 = 0.0,
     lastlimcenter::Float64 = 0.0
-)
+) where P<:PlotLib
         return new(
             ax,
             artists,
@@ -35,12 +35,12 @@ mutable struct RABaseInfo
 end
 
 function RABaseInfo(
-    ax::PyObject,
-    a::AbstractVector{PyObject},
+    ax::Axis{P},
+    a::AbstractVector{Artist{P}},
     limx::NTuple{2, Real},
     limy::NTuple{2, Real}
-)
-    return RABaseInfo(
+) where P<:PlotLib
+    return RABaseInfo{P}(
         ax,
         a,
         convert(NTuple{2, Float64}, limx),
@@ -48,7 +48,7 @@ function RABaseInfo(
     )
 end
 
-function RABaseInfo(ax::PyObject, artist::PyObject, args...)
+function RABaseInfo(ax::Axis{P}, artist::Artist{P}, args...) where P<:PlotLib
     return RABaseInfo(ax, [artist], args...)
 end
 
@@ -65,7 +65,7 @@ function ParallelSpeed(
     ParallelSpeed(E)
 end
 
-function ParallelSpeed(::Type{M}) where {S, D, M<:MappedDynamicDownsampler{S, D}}
+function ParallelSpeed(::Type{M}) where {D, M<:MappedDynamicDownsampler{<:Any, D}}
     return ParallelSpeed(D)
 end
 
@@ -86,8 +86,8 @@ xbounds(a::ResizeableArtist) = xbounds(a.baseinfo)
 ybounds(a::ResizeableArtist) = ybounds(a.baseinfo)
 
 function set_ax_home(a::ResizeableArtist)
-    a.baseinfo.ax[:set_ylim]([a.baseinfo.datalimy...])
-    a.baseinfo.ax[:set_xlim]([a.baseinfo.datalimx...])
+    a.baseinfo.ax.ax[:set_ylim]([a.baseinfo.datalimy...])
+    a.baseinfo.ax.ax[:set_xlim]([a.baseinfo.datalimx...])
 end
 
 ratiodiff(a, b) = abs(a - b) / (b + eps(b))
@@ -127,7 +127,7 @@ function maybe_redraw(ra::ResizeableArtist, xstart, xend, px_width)
         ra.baseinfo.lastlimwidth = limwidth
         ra.baseinfo.lastlimcenter = limcenter
         update_plotdata(ra, xstart, xend, px_width)
-        ra.baseinfo.ax[:figure][:canvas][:draw_idle]()
+        ra.baseinfo.ax.ax[:figure][:canvas][:draw_idle]()
     end
 end
 
@@ -144,7 +144,7 @@ function update_plotdata(
     pixwidth,
     jobchannel::RemoteChannel,
     datachannel::RemoteChannel,
-    ::AbstractVector{ParallelSlow}
+    ::AbstractVector{ParallelSlow},
 )
     for ra in ras
         update_plotdata(ra, xstart, xend, pixwidth)
@@ -194,7 +194,7 @@ end
 function remote_make_plotdata(
     xstart, xend, pixwidth,
     ::Type{M}, mapfnc, args_base
-) where {T, A, D<:CachingDynamicTs{T, A}, S, M<:MappedDynamicDownsampler{S, D}}
+) where {D<:DynamicDownsampler, M<:MappedDynamicDownsampler{<:Any, D}}
     xpt, ypt = remote_make_plotdata(xstart, xend, pixwidth, D, args_base...)
     ymapped = mapfnc(ypt)
     return (xpt, ymapped)

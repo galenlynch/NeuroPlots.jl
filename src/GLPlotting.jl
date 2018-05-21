@@ -9,6 +9,10 @@ using
 
 export
     # Types
+    Axis,
+    Artist,
+    MPL,
+    PQTG,
     ParallelSpeed,
     ParallelSlow,
     ParallelFast,
@@ -21,6 +25,7 @@ export
     plot_vertical_spacing,
     resizeable_spectrogram
 
+include("plotlibs.jl")
 include("util.jl")
 include("resizeableartists.jl")
 include("artdirector.jl")

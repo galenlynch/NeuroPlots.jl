@@ -6,30 +6,30 @@ plot a resizeable spectrogram of a signal in a matplotlib axis
 function resizeable_spectrogram end
 
 function resizeable_spectrogram(
-    ax::PyObject,
+    ax::A,
     args...;
-    listen_ax::Vector{PyObject} = [ax],
+    listen_ax::Vector{A} = [ax],
     toplevel::Bool = true,
     kwargs...
-)
+) where {P<:PlotLib, A<:Axis{P}}
     rartist = ResizeableSpec(ax, args...; kwargs...)
     connect_callbacks(ax, rartist, listen_ax; toplevel = toplevel)
     return rartist
 end
 
-struct ResizeableSpec{T<:DynamicSpectrogram} <: ResizeableArtist{T}
+struct ResizeableSpec{T<:DynamicSpectrogram, P} <: ResizeableArtist{T,P}
     ds::T
     clim::Vector{Float64}
     frange::Vector{Float64}
     cmap::String
-    baseinfo::RABaseInfo
-    function ResizeableSpec{T}(
+    baseinfo::RABaseInfo{P}
+    function ResizeableSpec{T,P}(
         ds::T,
         clim::Vector{Float64},
         frange::Vector{Float64},
         cmap::String,
-        baseinfo::RABaseInfo
-    ) where {T<:DynamicSpectrogram}
+        baseinfo::B
+    ) where {T<:DynamicSpectrogram, P, B<:RABaseInfo{P}}
         nfr = length(frange)
         if ! empty_or_ordered_bound(frange)
             error("frange must be empty or be bounds")
@@ -47,19 +47,19 @@ function ResizeableSpec(
     clim::Vector{Float64},
     frange::Vector{Float64},
     cmap::String,
-    baseinfo::RABaseInfo
-) where {T<:DynamicSpectrogram}
-    return ResizeableSpec{T}(ds, clim, frange, cmap, baseinfo)
+    baseinfo::RABaseInfo{P}
+) where {T<:DynamicSpectrogram, P}
+    return ResizeableSpec{T,P}(ds, clim, frange, cmap, baseinfo)
 end
 
 # type conversion
 function ResizeableSpec(
-    ds::DynamicSpectrogram,
-    clim::Vector{<:Real},
-    frange::Vector{<:Real},
+    ds::T,
+    clim::AbstractVector{<:Real},
+    frange::AbstractVector{<:Real},
     cmap::AbstractString,
-    baseinfo::RABaseInfo
-)
+    baseinfo::R
+) where {T<:DynamicSpectrogram, R<:RABaseInfo}
     return ResizeableSpec(
         ds,
         convert(Vector{Float64}, clim),
@@ -72,8 +72,8 @@ end
 # Make base info
 function ResizeableSpec(
     ds::DynamicSpectrogram,
-    clim::Vector{<:Real},
-    frange::Vector{<:Real},
+    clim::AbstractVector{<:Real},
+    frange::AbstractVector{<:Real},
     cmap::AbstractString,
     args...
 )
@@ -82,13 +82,13 @@ end
 
 # make artist, find xlim and ylim
 function ResizeableSpec(
-    ax::PyObject,
+    ax::A,
     ds::DynamicSpectrogram,
     args... ;
     clim::AbstractVector{<:Real} = Vector{Float64}(),
     frange::AbstractVector{<:Real} = Vector{Float64}(),
     cmap::AbstractString = "viridis",
-)
+) where {P<:PlotLib, A<:Axis{P}}
     yb = isempty(frange) ? extrema(ds) : (frange...)
     return ResizeableSpec(
         ds,
@@ -96,7 +96,7 @@ function ResizeableSpec(
         frange,
         string(cmap),
         ax,
-        Vector{PyObject}(),
+        Vector{Artist{P}}(),
         duration(ds),
         yb,
         args...
@@ -105,7 +105,7 @@ end
 
 # make dynamic spectrogram
 function ResizeableSpec(
-    ax::PyObject,
+    ax::Axis,
     a::AbstractVector,
     fs::Real,
     offset::Real = 0,
@@ -126,27 +126,30 @@ baseinfo(r::ResizeableSpec) = r.baseinfo
 xbounds(a::ResizeableSpec) = duration(a.ds)
 ybounds(a::ResizeableSpec) = isempty(a.frange) ? extrema(a.ds) : a.frange
 
-function update_plotdata(ra::ResizeableSpec, xstart, xend, pixwidth)
+function update_plotdata(ra::R, xstart, xend, pixwidth) where
+    {P<:MPL, R<:ResizeableSpec{<:DynamicSpectrogram, P}}
     (t, (f, s), was_downsamped) = downsamp_req(ra.ds, xstart, xend, pixwidth)
     (db, f_start, f_end) = process_spec_data(ra, f, s)
 
     if ! isempty(ra.baseinfo.artists)
-        ra.baseinfo.artists[1][:remove]()
+        ra.baseinfo.artists[1].artist[:remove]()
         pop!(ra.baseinfo.artists)
     end
 
-    imartist = ra.baseinfo.ax[:imshow](
-        db;
-        cmap = ra.cmap,
-        extent = [t[1], t[end], f_start, f_end],
-        interpolation = "nearest",
-        origin = "lower",
-        aspect = "auto"
+    imartist = Artist{P}(
+        ra.baseinfo.ax.ax[:imshow](
+            db;
+            cmap = ra.cmap,
+            extent = [t[1], t[end], f_start, f_end],
+            interpolation = "nearest",
+            aspect = "auto"
+        )
     )
     push!(ra.baseinfo.artists, imartist)
 end
 
-function process_spec_data(ra::ResizeableSpec, f, s)
+function process_spec_data(ra::R, f, s) where
+    {P<:MPL, R<:ResizeableSpec{<:DynamicSpectrogram, P}}
     if isempty(ra.frange)
         f_start = f[1]
         f_end = f[end]
