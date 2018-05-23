@@ -151,7 +151,7 @@ end
 function make_plotdata(
     dts::DynamicDownsampler{<:NTuple{2, <:Number}}, xstart, xend, pixwidth
 )
-    fill_points(downsamp_req(dts, xstart, xend, pixwidth)...)
+    fill_points(downsamp_req(dts, xstart, xend, pixwidth, false, Int32)...)
 end
 
 function update_artists(ra::ResizeablePatch{<:Any,MPL}, xpt, ypt)
