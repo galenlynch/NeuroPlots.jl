@@ -129,9 +129,9 @@ ybounds(a::ResizeableSpec) = isempty(a.frange) ? extrema(a.ds) : a.frange
 update_args(ra::ResizeableSpec) = (ra.frange, ra.clim)
 
 function make_plotdata(ds::DynamicSpectrogram, xstart, xend, pixwidth, frange, clim)
-    (t, (f, s), was_downsamped) = downsamp_req(ds, xstart, xend, pixwidth)
+    (t, (f, s, t_w, f_w), was_downsamped) = downsamp_req(ds, xstart, xend, pixwidth)
     (db, f_start, f_end) = process_spec_data(s, f, frange, clim)
-    return (t[1], t[end], f_start, f_end, db)
+    return (t[1], t[end], f_start, f_end, t_w, f_w, db)
 end
 
 function process_spec_data(s, f, frange, clim)
@@ -154,7 +154,7 @@ function process_spec_data(s, f, frange, clim)
 end
 
 function update_artists(
-    ra::ResizeableSpec{<:Any, P}, t_start, t_end, f_start, f_end, db
+    ra::ResizeableSpec{<:Any, P}, t_start, t_end, f_start, f_end, t_w, f_w, db
 ) where {P<:MPL}
     if ! isempty(ra.baseinfo.artists)
         ra.baseinfo.artists[1].artist[:remove]()
@@ -165,7 +165,10 @@ function update_artists(
         ra.baseinfo.ax.ax[:imshow](
             db;
             cmap = ra.cmap,
-            extent = [t_start, t_end, f_start, f_end],
+            extent = [
+                t_start - t_w/2, t_end + t_w/2,
+                f_start - f_w/2, f_end + f_w/2
+            ],
             interpolation = "nearest",
             origin = "lower",
             aspect = "auto"
