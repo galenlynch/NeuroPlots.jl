@@ -84,15 +84,17 @@ function maybe_redraw(
     ad::ArtDirector,
     xstart,
     xend,
-    px_width
-)
+    px_width::T
+) where T<:Integer
     artists_to_redraw = similar(ad.artists, 0)
     limwidth = xend - xstart
     limcenter = (xend + xstart) / 2
+    px = Vector{T}()
     for ra in ad.artists
-        ra.baseinfo.lastlimwidth = limwidth
-        ra.baseinfo.lastlimcenter = limcenter
         if artist_should_redraw(ra, xstart, xend, limwidth, limcenter)
+            ra.baseinfo.lastlimwidth = limwidth
+            ra.baseinfo.lastlimcenter = limcenter
+            push!(px, compress_px(ra, xstart, xend, px_width))
             push!(artists_to_redraw, ra)
         end
     end
@@ -100,7 +102,7 @@ function maybe_redraw(
         artists_to_redraw,
         xstart,
         xend,
-        px_width,
+        px,
         ad.jobchannel,
         ad.datachannel,
         ad.pspeeds

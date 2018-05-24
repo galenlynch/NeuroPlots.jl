@@ -124,15 +124,31 @@ function artist_should_redraw(
     return redraw
 end
 
-function maybe_redraw(ra::ResizeableArtist, xstart, xend, px_width)
+function maybe_redraw(ra::ResizeableArtist, xstart, xend, px_width::Integer)
     limwidth = xend - xstart
     limcenter = (xend + xstart) / 2
     if artist_should_redraw(ra, xstart, xend, limwidth, limcenter)
         ra.baseinfo.lastlimwidth = limwidth
         ra.baseinfo.lastlimcenter = limcenter
-        update_plotdata(ra, xstart, xend, px_width)
+        npx = compress_px(ra, xstart, xend, px_width)
+        update_plotdata(ra, xstart, xend, npx)
         update_ax(ra.baseinfo.ax)
     end
+end
+
+function compress_px(
+    ra::ResizeableArtist, xstart, xend, px_width::T
+) where {T<:Integer}
+    (xb, xe) = ra.baseinfo.datalimx
+    if xb > xstart || xe < xend
+        x_s_b = max(xb, xstart)
+        x_e_b = min(xe, xend)
+        compression = (x_e_b - x_s_b) / (xend - xstart)
+        px_out = ceil(T, px_width * compression)
+    else
+        px_out = px_width
+    end
+    return px_out
 end
 
 function update_plotdata(ra::ResizeableArtist, xstart, xend, pixwidth)
@@ -148,13 +164,13 @@ function update_plotdata(
     ras::Vector{<:ResizeableArtist},
     xstart,
     xend,
-    pixwidth,
+    pixwidths,
     jobchannel::RemoteChannel,
     datachannel::RemoteChannel,
     ::AbstractVector{ParallelSlow},
 )
-    for ra in ras
-        update_plotdata(ra, xstart, xend, pixwidth)
+    for (i, ra) in enumerate(ras)
+        update_plotdata(ra, xstart, xend, pixwidths[i])
     end
 end
 
@@ -164,7 +180,7 @@ function update_plotdata(
     ras::Vector{<:ResizeableArtist},
     xstart,
     xend,
-    pixwidth,
+    pixwidths,
     jobchannel::RemoteChannel,
     datachannel::RemoteChannel,
     ::AbstractVector{ParallelFast}
@@ -172,7 +188,7 @@ function update_plotdata(
     na = length(ras)
     func_calls = Vector{FuncCall}(na)
     @. func_calls = plotdata_fnc(
-        downsampler(ras), xstart, xend, pixwidth
+        downsampler(ras), xstart, xend, pixwidths
     )
     for job in enumerate(func_calls)
         put!(jobchannel, job)

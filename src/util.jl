@@ -66,7 +66,7 @@ function ax_pix_width(ax::A) where {P<:MPL, A<:Axis{P}}
     width = bbox[:width]::Float64
     dpi = fig[:dpi]::Float64
 
-    return width * dpi
+    return ceil(Int, width * dpi)
 end
 
 function get_viewbox(a::PyObject)
