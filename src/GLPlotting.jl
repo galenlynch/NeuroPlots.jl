@@ -25,6 +25,7 @@ export
     downsamp_patch,
     plot_spacing,
     plot_offsets,
+    plotitem_to_ax,
     plot_vertical_spacing,
     resizeable_spectrogram
 

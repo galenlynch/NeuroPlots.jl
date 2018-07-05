@@ -106,3 +106,8 @@ end
 
 update_ax(ax::Axis{MPL}) = ax.ax[:figure][:canvas][:draw_idle]()
 update_ax(ax::Axis{PQTG}) = nothing
+
+function plotitem_to_ax(py::PyObject)
+    vb = get_viewbox(py)::PyObject
+    Axis{PQTG}(vb)
+end
