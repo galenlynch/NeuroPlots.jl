@@ -45,7 +45,7 @@ end
 function plot_vertical_spacing(
     ax::Axis,
     As::A,
-    fss::AbstractVector,
+    fss::AbstractVector{<:Real},
     offsets::AbstractVector = [],
     args...;
     kwargs...
@@ -53,4 +53,14 @@ function plot_vertical_spacing(
     plot_offs = isempty(offsets) ? zeros(E, length(As)) : offsets
     dts = CacheAccessor.(MaxMin, As, fss, plot_offs)
     return plot_vertical_spacing(ax, dts, args...; kwargs...)
+end
+
+function plot_vertical_spacing(
+    ax::Axis,
+    As::AbstractVector{<:AbstractVector{<:Number}},
+    fs::Number,
+    args...;
+    kwargs...
+)
+    plot_vertical_spacing(ax, As, fill(fs, size(As)), args...; kwargs...)
 end
