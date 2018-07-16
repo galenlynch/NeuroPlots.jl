@@ -63,7 +63,6 @@ struct ResizeablePatch{T<:AbstractDynamicDownsampler, P<:PlotLib} <: ResizeableA
 end
 
 downsampler(r::ResizeablePatch) = r.dts
-baseinfo(r::ResizeablePatch) = r.baseinfo
 
 function ResizeablePatch(dts::T, ra::R, exact::Bool = false) where
     {T<:AbstractDynamicDownsampler,P,R<:RABaseInfo{P}}

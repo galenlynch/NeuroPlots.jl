@@ -85,6 +85,8 @@ ybounds(a::RABaseInfo) = a.datalimy
 xbounds(a::ResizeableArtist) = xbounds(a.baseinfo)
 ybounds(a::ResizeableArtist) = ybounds(a.baseinfo)
 
+baseinfo(r::ResizeableArtist) = r.baseinfo
+
 function set_ax_home(a::ResizeableArtist)
     setlims(a.baseinfo.ax, a.baseinfo.datalimx..., a.baseinfo.datalimy...)
 end

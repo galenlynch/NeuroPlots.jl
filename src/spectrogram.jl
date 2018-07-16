@@ -143,7 +143,6 @@ def_cmap(::Type{A}) where {P, A<:Axis{P}} = def_cmap(P)
 def_cmap(::A) where {A<:Axis} = def_cmap(A)
 
 downsampler(r::ResizeableSpec) = r.ds
-baseinfo(r::ResizeableSpec) = r.baseinfo
 
 xbounds(a::ResizeableSpec) = time_interval(a.ds)
 ybounds(a::ResizeableSpec) = isempty(a.frange) ? extrema(a.ds) : a.frange
