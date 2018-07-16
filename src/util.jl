@@ -104,6 +104,16 @@ function axis_ylim(a::Axis{PQTG})
     return ybounds
 end
 
+function setlims(ax::Axis{MPL}, xb, xe, yb, ye)
+        ax.ax[:set_xlim]([xb, xe])
+        ax.ax[:set_ylim]([yb, ye])
+end
+
+function setlims(ax::Axis{PQTG}, xb, xe, yb, ye)
+        ax.ax[:setXRange](xb, xe)
+        ax.ax[:setYRange](yb, ye)
+end
+
 update_ax(ax::Axis{MPL}) = ax.ax[:figure][:canvas][:draw_idle]()
 update_ax(ax::Axis{PQTG}) = nothing
 
