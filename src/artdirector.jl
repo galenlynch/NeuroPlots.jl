@@ -143,6 +143,7 @@ function maybe_redraw(
     artists_to_redraw = similar(ad.artists, 0)
     limwidth = xend - xstart
     limcenter = (xend + xstart) / 2
+    res = (xend - xstart) / px_width
     px = Vector{T}()
     for ra in ad.artists
         if artist_should_redraw(ra, xstart, xend, limwidth, limcenter)
@@ -157,6 +158,7 @@ function maybe_redraw(
         xstart,
         xend,
         px,
+        res,
         ad.jobchannel,
         ad.datachannel,
         ad.pspeeds

@@ -152,7 +152,12 @@ end
 update_args(ra::ResizeablePatch) = (ra.exact,)
 
 function make_plotdata(
-    dts::AbstractDynamicDownsampler{<:NTuple{2, <:Number}}, xstart, xend, pixwidth, exact
+    dts::AbstractDynamicDownsampler{<:NTuple{2, <:Number}},
+    xstart,
+    xend,
+    pixwidth,
+    res,
+    exact
 )
     fill_points(downsamp_req(dts, xstart, xend, pixwidth, exact, Int32)...)
 end

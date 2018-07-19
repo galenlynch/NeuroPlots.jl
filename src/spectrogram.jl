@@ -148,7 +148,9 @@ ybounds(a::ResizeableSpec) = isempty(a.frange) ? extrema(a.ds) : a.frange
 
 update_args(ra::ResizeableSpec) = (ra.frange, ra.clim)
 
-function make_plotdata(ds::AbstractDynamicSpectrogram, xstart, xend, pixwidth, frange, clim)
+function make_plotdata(
+    ds::AbstractDynamicSpectrogram, xstart, xend, pixwidth, res, frange, clim
+)
     (t, (f, s, t_w, f_w), was_downsamped) = downsamp_req(ds, xstart, xend, pixwidth)
     (db, f_start, f_end) = process_spec_data(s, f, frange, clim)
     return (t[1], t[end], f_start, f_end, t_w, f_w, db)

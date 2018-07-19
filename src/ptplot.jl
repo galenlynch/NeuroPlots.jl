@@ -180,8 +180,8 @@ function box_points(
     xs, ys, connect
 end
 
-function make_plotdata(dp::DynamicPointBoxer, xstart, xend, pixwidth)
-    xpts, marks, wd = downsamp_req(dp, xstart, xend, pixwidth)
+function make_plotdata(dp::DynamicPointBoxer, xstart, xend, pixwidth, res)
+    xpts, marks, wd = downsamp_req(dp, xstart, xend, res)
     box_points(xpts, marks...)
 end
 

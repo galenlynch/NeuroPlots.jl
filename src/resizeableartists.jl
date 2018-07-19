@@ -129,11 +129,12 @@ end
 function maybe_redraw(ra::ResizeableArtist, xstart, xend, px_width::Integer)
     limwidth = xend - xstart
     limcenter = (xend + xstart) / 2
+    res = (xend - xstart) / px_width
     if artist_should_redraw(ra, xstart, xend, limwidth, limcenter)
         ra.baseinfo.lastlimwidth = limwidth
         ra.baseinfo.lastlimcenter = limcenter
         npx = compress_px(ra, xstart, xend, px_width)
-        update_plotdata(ra, xstart, xend, npx)
+        update_plotdata(ra, xstart, xend, npx, res)
         update_ax(ra.baseinfo.ax)
     end
 end
@@ -153,10 +154,10 @@ function compress_px(
     return px_out
 end
 
-function update_plotdata(ra::ResizeableArtist, xstart, xend, pixwidth)
+function update_plotdata(ra::ResizeableArtist, xstart, xend, pixwidth, res)
     ds = downsampler(ra)
     args = update_args(ra)
-    data = make_plotdata(ds, xstart, xend, pixwidth, args...)
+    data = make_plotdata(ds, xstart, xend, pixwidth, res, args...)
     update_artists(ra, data...)
 end
 
@@ -167,12 +168,13 @@ function update_plotdata(
     xstart,
     xend,
     pixwidths,
+    res,
     jobchannel::RemoteChannel,
     datachannel::RemoteChannel,
     ::AbstractVector{ParallelSlow},
 )
     for (i, ra) in enumerate(ras)
-        update_plotdata(ra, xstart, xend, pixwidths[i])
+        update_plotdata(ra, xstart, xend, pixwidths[i], res)
     end
 end
 
@@ -183,6 +185,7 @@ function update_plotdata(
     xstart,
     xend,
     pixwidths,
+    res,
     jobchannel::RemoteChannel,
     datachannel::RemoteChannel,
     ::AbstractVector{ParallelFast}
@@ -190,7 +193,7 @@ function update_plotdata(
     na = length(ras)
     func_calls = Vector{FuncCall}(na)
     @. func_calls = plotdata_fnc(
-        downsampler(ras), xstart, xend, pixwidths
+        downsampler(ras), xstart, xend, pixwidths, res
     )
     for job in enumerate(func_calls)
         put!(jobchannel, job)
@@ -203,11 +206,11 @@ function update_plotdata(
     end
 end
 
-function plotdata_fnc(cdts::D, xstart, xend, pixwidth) where {D<:AbstractDynamicDownsampler}
+function plotdata_fnc(cdts::D, xstart, xend, pixwidth, res) where {D<:AbstractDynamicDownsampler}
     args = remote_plotdata_args(cdts)
     return FuncCall(
         remote_make_plotdata,
-        xstart, xend, pixwidth, D, args...
+        xstart, xend, pixwidth, res, D, args...
     )
 end
 
@@ -217,10 +220,10 @@ function remote_plotdata_args(mds::MappedDynamicDownsampler)
 end
 
 function remote_make_plotdata(
-    xstart, xend, pixwidth,
+    xstart, xend, pixwidth, res
     ::Type{M}, mapfnc, args_base
 ) where {D<:AbstractDynamicDownsampler, M<:MappedDynamicDownsampler{<:Any, D}}
-    xpt, ypt = remote_make_plotdata(xstart, xend, pixwidth, D, args_base...)
+    xpt, ypt = remote_make_plotdata(xstart, xend, pixwidth, res, D, args_base...)
     ymapped = mapfnc(ypt)
     return (xpt, ymapped)
 end
