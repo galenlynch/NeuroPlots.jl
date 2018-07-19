@@ -163,7 +163,7 @@ end
 update_args(::ResizeableArtist) = ()
 
 function update_plotdata(
-    ras::Vector{<:ResizeableArtist},
+    ras::AbstractVector{<:ResizeableArtist},
     xstart,
     xend,
     pixwidths,
@@ -179,7 +179,7 @@ end
 function update_artists end
 
 function update_plotdata(
-    ras::Vector{<:ResizeableArtist},
+    ras::AbstractVector{<:ResizeableArtist},
     xstart,
     xend,
     pixwidths,

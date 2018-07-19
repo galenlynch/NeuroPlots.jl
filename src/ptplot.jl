@@ -14,22 +14,49 @@ end
 
 function point_boxes_multi(
     ax::A,
-    pts::AbstractVector{<:DynamicPointDownsampler},
-    y_offsets::AbstractVector{<:Number},
+    pts::AbstractVector{<:DynamicPointBoxer},
     min_width::Number = 0;
-    listen_ax::Vector{A} = [ax], toplevel::Bool = true, kwargs...
+    director::Union{Missing, ArtDirector} = missing,
+    listen_ax::Vector{A} = [ax],
+    toplevel::Bool = true,
+    cluster_ids::AbstractVector{<:Integer} = Int[],
+    kwargs...
 ) where A<:Axis
     np = length(pts)
     np > 0 || throw(ArgumentError("np can not be empty"))
-    np == length(y_offsets) || throw(ArgumentError("y_offsets not the same length"))
-    rmp_first = MergingPoints(ax, pts[1], y_offsets[1], min_width; kwargs...)
+    isempty(cluster_ids) || length(cluster_ids) == np || throw(ArgumentError(
+        "Cluster ids not the right size"
+    ))
+    usename = ! isempty(cluster_ids)
+    name_karg = usename ? ((:name, string(cluster_ids[1])),) : ()
+    rmp_first = MergingPoints(
+        ax, pts[1], min_width;
+        pen = def_line_colors[1],
+        name_karg..., kwargs...
+    )
     rmps = Vector{typeof(rmp_first)}(np)
     rmps[1] = rmp_first
+    nc = length(def_line_colors)
     @inbounds for i in 2:np
-        rmps[i] = MergingPoints(ax, pts[i], y_offsets[i], min_width; kwargs...)
+        name_karg = usename ? ((:name, string(cluster_ids[i])),) : ()
+        rmps[i] = MergingPoints(
+            ax, pts[i], min_width;
+            pen = def_line_colors[ndx_wrap(i, nc)],
+            name_karg..., kwargs...
+        )
     end
-    ad = ArtDirector(rmps)
-    connect_callbacks(ax, ad, listen_ax; toplevel = toplevel)
+    if ismissing(director)
+        ad = ArtDirector(rmps)
+        connect_callbacks(ax, ad, listen_ax; toplevel = false)
+    else
+        ad = director
+        append_artists!(ad, rmps)
+        foreach(
+            ra -> connect_callbacks(ax, ra, listen_ax; toplevel = false),
+            rmps
+        )
+    end
+    toplevel && set_ax_home(ad)
     ad, rmps
 end
 

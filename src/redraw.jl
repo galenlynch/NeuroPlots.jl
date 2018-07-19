@@ -1,6 +1,6 @@
 function connect_callbacks(
     ax::Axis{P},
-    ra::Union{<:ResizeableArtist{<:Any,P}, <:ArtDirector{<:Any,P,<:Any,<:Any}},
+    ra::Union{<:ResizeableArtist{<:Any,P}, <:ArtDirector{P,<:Any}},
     listen_ax::AbstractVector{<:Axis{P}} = [ax];
     toplevel::Bool = true
 ) where {P<:MPL}
@@ -17,7 +17,7 @@ end
 
 function connect_callbacks(
     ax::Axis{P},
-    ra::Union{<:ResizeableArtist{<:Any,P}, <:ArtDirector{<:Any,P,<:Any,<:Any}},
+    ra::Union{<:ResizeableArtist{<:Any,P}, <:ArtDirector{P,<:Any}},
     args...;
     toplevel::Bool = true
 ) where {P<:PQTG}
@@ -32,7 +32,7 @@ function connect_artists(ax::Axis{P}, ra::ResizeableArtist{<:Any,P}) where
 end
 
 function connect_artists(
-    ax::Axis{P}, ra::ArtDirector{<:Any,P,<:Any,<:Any}
+    ax::Axis{P}, ra::ArtDirector{P,<:Any}
 ) where {P<:PQTG}
     foreach((x) -> connect_artists(ax, x), ra.artists)
 end
