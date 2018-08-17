@@ -30,7 +30,7 @@ function plot_multi_patch(
     na = length(dts)
     indicies = mod.(0:(na - 1), 10) # for Python consumption, base zero
     colorargs = ["C$n" for n in indicies]
-    patchartists = Vector{ResizeablePatch{T,P}}(na)
+    @compat patchartists = Vector{ResizeablePatch{T,P}}(undef, na)
     for i in 1:na
         patchartists[i] = downsamp_patch(ax, dts[i], colorargs[i]; plotkwargs...)
     end
@@ -130,8 +130,8 @@ function fill_points(
 }
     if was_downsampled
         npt = 2 * length(xs)
-        xpts = Vector{X}(npt)
-        ypts = Vector{Y}(npt)
+        @compat xpts = Vector{X}(undef, npt)
+        @compat ypts = Vector{Y}(undef, npt)
         for (x_i, x) in enumerate(xs) # Enumerate over input
             # Calculate the corresponding position in the output
             i = (x_i - 1) * 2 + 1

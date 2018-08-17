@@ -28,11 +28,15 @@ end
 
 function connect_artists(ax::Axis{P}, ra::ResizeableArtist{<:Any,P}) where
     {P<:PQTG}
-    foreach((x)-> ax.ax[:addItem](x.artist), ra.baseinfo.artists)
+    for a in ra.baseinfo.artists
+        ax.ax[:addItem](a.artist)
+    end
 end
 
 function connect_artists(
-    ax::Axis{P}, ra::ArtDirector{P,<:Any}
+    ax::Axis{P}, ad::ArtDirector{P,<:Any}
 ) where {P<:PQTG}
-    foreach((x) -> connect_artists(ax, x), ra.artists)
+    for a in ad.artists
+        connect_artists(ax, a)
+    end
 end

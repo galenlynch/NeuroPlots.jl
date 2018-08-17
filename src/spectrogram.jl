@@ -105,7 +105,7 @@ function ResizeableSpec(
     frange::AbstractVector{<:Real} = Vector{Float64}(),
     cmap::AbstractString = def_cmap(ax)
 ) where {P<:PlotLib, A<:Axis{P}}
-    yb = isempty(frange) ? extrema(ds) : (frange...)
+    yb = isempty(frange) ? extrema(ds) : (frange...,)
     return ResizeableSpec(
         ds,
         clim,
@@ -215,8 +215,8 @@ function update_artists(
 end
 
 function clipval!(a::AbstractArray, c::NTuple{2, R}) where {R<:Number}
-    a[a.<c[1]] = c[1]
-    a[a.>c[2]] = c[2]
+    a[a.<c[1]] .= c[1]
+    a[a.>c[2]] .= c[2]
 end
 
 noop(args...;kwargs...) = nothing

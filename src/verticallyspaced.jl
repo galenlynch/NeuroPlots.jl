@@ -23,7 +23,7 @@ function plot_vertical_spacing(
         end
     end
     y_offsets = plot_offsets(nts, y_spacing)
-    mts = Vector{MappedDynamicDownsampler{E, D}}(nts)
+    @compat mts = Vector{MappedDynamicDownsampler{E, D}}(undef, nts)
     for (i, offset) in enumerate(y_offsets)
         y_transform = make_shifter(offset)
         mts[i] = MappedDynamicDownsampler(ts[i], y_transform)

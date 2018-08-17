@@ -41,9 +41,9 @@ function summarize_artists(
     artists::AbstractVector{<:ResizeableArtist{<:Any, P}}
 ) where P
     nartist = length(artists)
-    allaxes = Vector{Axis{P}}(nartist)
-    allxlim = Vector{NTuple{2, Float64}}(nartist)
-    allylim = Vector{NTuple{2, Float64}}(nartist)
+    @compat allaxes = Vector{Axis{P}}(undef, nartist)
+    @compat allxlim = Vector{NTuple{2, Float64}}(undef, nartist)
+    @compat allylim = Vector{NTuple{2, Float64}}(undef, nartist)
     for (i, ra) in enumerate(artists)
         allaxes[i] = ra.baseinfo.ax
         allxlim[i] = ra.baseinfo.datalimx
@@ -59,11 +59,11 @@ function combine_axis_info(
 )
     axes = unique(allaxes)
     nax = length(axes)
-    limx = Vector{NTuple{2,Float64}}(nax)
-    limy = Vector{NTuple{2, Float64}}(nax)
-    matchmask = Vector{Bool}(length(allaxes))
+    @compat limx = Vector{NTuple{2,Float64}}(undef, nax)
+    @compat limy = Vector{NTuple{2, Float64}}(undef, nax)
+    @compat matchmask = Vector{Bool}(undef, length(allaxes))
     for (i, ax) in enumerate(axes)
-        @. matchmask = allaxes == ax
+        matchmask .= allaxes .== Ref(ax)
         limx[i] = extrema_red(allxlim[matchmask])
         limy[i] = extrema_red(allylim[matchmask])
     end
@@ -78,7 +78,7 @@ function append_artists!(
     used_mask = fill(false, size(new_axes))
     match_mask = similar(used_mask)
     for (i, old_ax) in enumerate(ad.axes)
-        @. match_mask = new_axes == old_ax
+        match_mask .= new_axes .== Ref(old_ax)
         @. used_mask = used_mask | match_mask
         if any(match_mask)
             new_bounding_xlim = extrema_red(new_xlims[match_mask])

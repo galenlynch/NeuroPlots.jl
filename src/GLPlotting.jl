@@ -2,6 +2,7 @@ __precompile__()
 module GLPlotting
 
 using
+    Compat,
     PyQtGraph,
     PyPlot,
     PyCall,
@@ -9,6 +10,11 @@ using
     GLUtilities,
     Missings,
     PointProcesses
+
+@static if VERSION >= v"0.7.0-DEV.2575"
+    using Distributed, Statistics
+else
+end
 
 export
     # Types

@@ -34,15 +34,15 @@ function point_boxes_multi(
         pen = def_line_colors[1],
         name_karg..., kwargs...
     )
-    rmps = Vector{typeof(rmp_first)}(np)
+    @compat rmps = Vector{typeof(rmp_first)}(undef, np)
     rmps[1] = rmp_first
     nc = length(def_line_colors)
     @inbounds for i in 2:np
-        name_karg = usename ? ((:name, string(cluster_ids[i])),) : ()
+        loop_name_karg = usename ? ((:name, string(cluster_ids[i])),) : ()
         rmps[i] = MergingPoints(
             ax, pts[i], min_width;
             pen = def_line_colors[ndx_wrap(i, nc)],
-            name_karg..., kwargs...
+            loop_name_karg..., kwargs...
         )
     end
     if ismissing(director)
@@ -176,8 +176,8 @@ function box_points(
 ) where {X<:AbstractFloat, Y<:AbstractFloat}
     nin = length(xlefts)
     npt = 6 * nin
-    xs = Vector{X}(npt)
-    ys = Vector{Y}(npt)
+    @compat xs = Vector{X}(undef, npt)
+    @compat ys = Vector{Y}(undef, npt)
     connect = fill(true, npt)
     @inbounds @simd for i_in in 1:nin
         left = xlefts[i_in]
@@ -202,9 +202,9 @@ function box_points(
         ys[i_out + 3] = bottom
     end
     # Blanking
-    xs[6:6:end] = NaN
-    ys[6:6:end] = NaN
-    connect[6:6:end] = false
+    xs[6:6:end] .= NaN
+    ys[6:6:end] .= NaN
+    connect[6:6:end] .= false
     xs, ys, connect
 end
 

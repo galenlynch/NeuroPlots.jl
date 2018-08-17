@@ -1,6 +1,10 @@
 using GLPlotting, PyPlot, PyCall, GLUtilities, GLTimeseries, PyQtGraph, PointProcesses
 
-using Base.Test
+@static if VERSION >= v"0.7.0-DEV.2575"
+    using Test
+else
+    using Base.Test
+end
 
 const app = QtApp()
 
@@ -15,12 +19,13 @@ const ds = CachingStftPsd(A, wl, fs)
 @testset "GLPlotting"  begin
 
     @testset "ts and spikes" begin
+
         fillshape = (2,)
         dynamic_tss = fill(dts, fillshape)
 
-        const qtplt = pg[:plot]()
-        const vb = get_viewbox(qtplt)
-        const qtax = Axis{PQTG}(vb)
+        qtplt = pg[:plot]()
+        vb = get_viewbox(qtplt)
+        qtax = Axis{PQTG}(vb)
         ad, qtartists, y_offsets = plot_vertical_spacing(qtax, dynamic_tss)
 
         ptts = fill(rand(20), 2)
@@ -36,8 +41,8 @@ const ds = CachingStftPsd(A, wl, fs)
     end
 
     @testset "util" begin
-        const C = [0, 1]
-        const B = fill(C, (2,))
+         C = [0, 1]
+         B = fill(C, (2,))
         @test plot_spacing(C) == 0.6
         @test plot_spacing(C, 1.2) == 0.6
         @test plot_spacing(C, 0) == 0
@@ -50,19 +55,19 @@ const ds = CachingStftPsd(A, wl, fs)
 
     @testset "pyqtgraph" begin
 
-        const qtplt = pg[:plot]()
-        const vb = get_viewbox(qtplt)
-        const qtax = Axis{PQTG}(vb)
+         qtplt = pg[:plot]()
+         vb = get_viewbox(qtplt)
+         qtax = Axis{PQTG}(vb)
 
         downsamp_patch(qtax, dts)
         app(vb)
     end
 
     @testset "resizeableartists" begin
-        const xs = [1, 2]
-        const ys = [(1, 2), (3, 4)]
-        const resx = [1, 1, 2, 2]
-        const resy = [1, 2, 3, 4]
+         xs = [1, 2]
+         ys = [(1, 2), (3, 4)]
+         resx = [1, 1, 2, 2]
+         resy = [1, 2, 3, 4]
         @test GLPlotting.fill_points(xs, ys, true) == (resx, resy)
         @test GLPlotting.fill_points(xs, ys, false) == (
             [1, 2],
@@ -88,9 +93,9 @@ const ds = CachingStftPsd(A, wl, fs)
 
         pttimes = rand(20)
         ptamps = rand(20)
-        const qtplt = pg[:plot]()
-        const vb = get_viewbox(qtplt)
-        const qtax = Axis{PQTG}(vb)
+         qtplt = pg[:plot]()
+         vb = get_viewbox(qtplt)
+         qtax = Axis{PQTG}(vb)
 
         pts_1 = VariablePoints(pttimes, ptamps)
 
@@ -102,9 +107,9 @@ const ds = CachingStftPsd(A, wl, fs)
 
         app(qtplt)
 
-        const qtplt = pg[:plot]()
-        const vb = get_viewbox(qtplt)
-        const qtax = Axis{PQTG}(vb)
+         qtplt = pg[:plot]()
+         vb = get_viewbox(qtplt)
+         qtax = Axis{PQTG}(vb)
 
         pttimes_2 = rand(20)
         pts_2 = VariablePoints(pttimes_2, ptamps)
@@ -144,9 +149,9 @@ const ds = CachingStftPsd(A, wl, fs)
         try
             dynamic_tss = fill(dts, fillshape)
 
-            const qtplt = pg[:plot]()
-            const vb = get_viewbox(qtplt)
-            const qtax = Axis{PQTG}(vb)
+             qtplt = pg[:plot]()
+             vb = get_viewbox(qtplt)
+             qtax = Axis{PQTG}(vb)
             qtartists = plot_vertical_spacing(qtax, dynamic_tss)
 
             artists = plot_vertical_spacing(ax, dynamic_tss)
@@ -157,12 +162,14 @@ const ds = CachingStftPsd(A, wl, fs)
     end
 
     @testset "spectrogram" begin
-        const B = sin.(2 * pi * 10 .* (1:npt) ./ fs) .+ 0.1 .* randn(npt)
 
-        const qtplt = pg[:plot]()
-        const vb = get_viewbox(qtplt)
-        const qtax = Axis{PQTG}(vb)
-        const rs = resizeable_spectrogram(qtax, B, fs)
+        B = sin.(2 * pi * 10 .* (1:npt) ./ fs) .+ 0.1 .* randn(npt)
+
+        qtplt = pg[:plot]()
+        vb = get_viewbox(qtplt)
+        qtax = Axis{PQTG}(vb)
+
+        rs = resizeable_spectrogram(qtax, B, fs)
         app(qtplt)
 
         (fig, ax) = subplots()

@@ -9,5 +9,5 @@ function qt_subplots()
     vb_s = get_viewbox(ps)
     ax_s = Axis{PQTG}(vb_s)
 
-    win, vb_n, ax_n, vb_s, ax_s
+    win, pn, vb_n, ax_n, ps, vb_s, ax_s
 end

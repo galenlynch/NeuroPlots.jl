@@ -191,7 +191,7 @@ function update_plotdata(
     ::AbstractVector{ParallelFast}
 )
     na = length(ras)
-    func_calls = Vector{FuncCall}(na)
+    @compat func_calls = Vector{FuncCall}(undef, na)
     @. func_calls = plotdata_fnc(
         downsampler(ras), xstart, xend, pixwidths, res
     )

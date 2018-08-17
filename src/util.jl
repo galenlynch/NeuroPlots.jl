@@ -42,7 +42,7 @@ function plot_offsets(
     if spacing == 0
         out = fill(T(offset), n_line)
     else
-        out = Vector{T}(spacing * (0:(n_line - 1)) + offset)
+        out = convert(Vector{T}, spacing * (0:(n_line - 1)) .+ offset)
     end
     return out
 end
