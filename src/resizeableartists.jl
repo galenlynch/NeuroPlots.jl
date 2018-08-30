@@ -227,3 +227,16 @@ function remote_make_plotdata(
     ymapped = mapfnc(ypt)
     return (xpt, ymapped)
 end
+
+to_curve(ra::ResizeableArtist) = ra.baseinfo.artists[1].artist
+
+function remove(ax::Axis{PQTG}, ras::AbstractVector{<:ResizeableArtist{<:Any, PQTG}})
+    for ra in ras
+        remove(ax, ra)
+    end
+end
+
+function remove(ax::Axis{PQTG}, ra::ResizeableArtist{<:Any, PQTG})
+    ax.ax[:removeItem](to_curve(ra))
+    nothing
+end

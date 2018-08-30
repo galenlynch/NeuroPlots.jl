@@ -37,7 +37,8 @@ export
     point_boxes,
     point_boxes_multi,
     resizeable_spectrogram,
-    qt_subplots
+    qt_subplots,
+    remove
 
 const DownsampCurve = PyNULL()
 const DownsampImage = PyNULL()
