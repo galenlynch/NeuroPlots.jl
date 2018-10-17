@@ -5,7 +5,7 @@ function raster_plot(
     post,
     patch_sets::Union{
         Nothing,
-        AbstractVector{<:AbstractVector{<:AbstractVector{<:NTuple{2, <:Number}}}}
+        AbstractVector{<:AbstractVector{<:AbstractVector}}
     } = nothing;
     tick_plot_args = (:color => "k",),
     patch_plot_args = [(:facecolor => "#9ecae1",), (:facecolor => "#deebf7",)],
@@ -49,6 +49,18 @@ function raster_plot_patches(
         ax[:add_collection](patch_collections[i])
     end
     patch_collections
+end
+
+function raster_plot_patches(
+    ax::PyObject,
+    patch_sets::AbstractVector{
+        <:AbstractVector{<:AbstractVector{<:Interval}}
+    },
+    args...;
+    kwargs...
+)
+    simple_patchsets = map(a -> map(b -> map(c -> bounds(c), b), a), patch_sets)
+    raster_plot_patches(ax, simple_patchsets, args...; kwargs...)
 end
 
 function raster_plot_patches(ax::PyObject, patch_sets::Nothing, args...; kwargs...)
@@ -137,7 +149,7 @@ function vertical_line_coords(xs::AbstractVector{<:Number}, ycenter, height = 1)
 end
 
 function make_patch_collection(
-    ints::AbstractVector{<:AbstractVector{<:NTuple{2, <:Number}}};
+    ints::AbstractVector{<:AbstractVector};
     height = 1,
     ycenters = 1:length(ints),
     kwargs...
@@ -148,7 +160,8 @@ function make_patch_collection(
     rects = Vector{PyObject}(undef, nint_total)
     pos = 1
     for (i, int_rep) in enumerate(ints)
-        rects[pos:(pos + nint[i] - 1)] = make_rect_patches(int_rep, ycenters[i], height)
+        rects[pos:(pos + nint[i] - 1)] =
+            make_rect_patches(int_rep, ycenters[i], height)
         pos += nint[i]
     end
     PyPlot.matplotlib[:collections][:PatchCollection](
@@ -157,7 +170,7 @@ function make_patch_collection(
 end
 
 function make_patch_collection(
-    ints::AbstractVector{<:NTuple{2, <:Number}};
+    ints::AbstractVector{<:Union{Interval, NTuple{2, <:Number}}};
     height = 1,
     ycenter = 1,
     kwargs...
@@ -200,6 +213,11 @@ function make_rect_patches(
         )
     end
     rects
+end
+
+function make_rect_patches(ints::AbstractVector{<:Interval}, args...)
+    simple_ints = bounds.(ints)
+    make_rect_patches(simple_ints, args...)
 end
 
 function matplotlib_scalebar(
