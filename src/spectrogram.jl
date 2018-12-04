@@ -1,5 +1,5 @@
 """
-    resizeable_spectrogram
+    resizeable_spectrogram(ax, args...; [listen_ax, toplevel], kwargs...)
 
 plot the spectrogram of a signal in a resizeable context
 """
@@ -163,8 +163,11 @@ function process_spec_data(s, f, frange, clim)
         f_end = f[end]
         sel_s = s
     else
+        f_l = length(f)
         f_start_i = searchsortedfirst(f, frange[1])
+        f_start_i > f_l && error("specified frange not in frequency range")
         f_end_i = searchsortedlast(f, frange[2])
+        f_end_i == 0 && error("specified frange not in frequency range")
         f_start = f[f_start_i]
         f_end = f[f_end_i]
         sel_s = view(s, f_start_i:f_end_i, 1:size(s, 2))
