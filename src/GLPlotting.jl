@@ -29,6 +29,8 @@ export
     MergingPoints,
 
     # Functions
+    axis_xlim,
+    axis_ylim,
     downsamp_patch,
     plot_spacing,
     plot_offsets,

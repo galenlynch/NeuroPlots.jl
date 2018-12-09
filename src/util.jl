@@ -87,10 +87,22 @@ function axis_xlim(ax::A) where {P<:MPL, A<:Axis{P}}
     return (bbox[:xmin]::Float64, bbox[:xmax]::Float64)
 end
 
+function axis_xlim(a::Axis{MPL}, xb, xe)
+    a.ax[:set_xlim]((xb, xe))
+    nothing
+end
+axis_xlim(a::Axis{MPL}, l::NTuple{2, <:Real}) = axis_xlim(a, l[1], l[2])
+
 function axis_ylim(ax::A) where {P<:MPL, A<:Axis{P}}
     bbox = axis_limits(ax)
     return (bbox[:ymin]::Float64, bbox[:ymax]::Float64)
 end
+
+function axis_ylim(a::Axis{MPL}, yb, ye)
+    a.ax[:set_ylim]((yb, ye))
+    nothing
+end
+axis_ylim(a::Axis{MPL}, l::NTuple{2, <:Real}) = axis_ylim(a, l[1], l[2])
 
 function axis_limits(a::Axis{PQTG})
     vrange = a.ax[:viewRange]()
