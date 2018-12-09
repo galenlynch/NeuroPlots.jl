@@ -268,6 +268,97 @@ function matplotlib_scalebar(
     sb
 end
 
+nearest_multiple(x, b::T) where T<:Integer = b * round(T, x / b)
+nearest_multiple(x, b) = b * round(x / b)
+
+function prefix(pow10)
+    range = floor(Int, pow10 / 3)
+    pre =
+        range == -4 ? "p" :
+        range == -3 ? "n" :
+        range == -2 ? "µ" :
+        range == -1 ? "m" :
+        range == 0 ? "" :
+        range == 1 ? "k" :
+        range == 2 ? "M" :
+        range == 3 ? "G" :
+        range == 4 ? "T" : error("out of range")
+end
+
+"Adjust the fraction away from 0 and 1, if possible, otherwise return `nothing`"
+function edgefix(frac, base_offset)
+    adjustment_dir = ifelse(frac == 0, 1, ifelse(frac == 1, -1, 0))
+    adjusted = ifelse(
+        (adjustment_dir != 0) & (base_offset >= 0),
+        nothing,
+        base_offset * adjustment_dir + frac
+    )
+end
+
+"""
+    function best_scalebar_size(
+        axis_begin::Real,
+        axis_end::Real,
+        target_frac::AbstractFloat,
+        axis_unit_pow10::Integer = 0;
+        bases = [10, 5, 2, 1],
+        base_penalties = [0, 5, 10, 20],
+        target_frac_penalty = 50
+    )
+    -> (scalebar_ax_size::Float64, scalebar_units::Int, scalebar_prefix::String)
+
+Finds the best scale bar size for an axis with limits `axis_begin` and
+`axis_end`, where the target scale bar fraction of the axis is `target_frac`.
+`target_frac` must be between `0` and `1`. The axis may optionally have units
+other than natural (e.g. if axis units are uV, then set `axis_unit_pow10 = -6`).
+
+Returns the size of the scalebar in axis units, `scalebar_ax_size`, the display
+size, `scalebar_units`, as well as the base 10 prefix for the scalebar units,
+`scalebar_prefix`, e.g. 'k' for `10^3`, 'm' for `10^-3` etc.
+
+Rounding is done to match the scalebar to the nearest base specified in `bases`.
+Which base is chosen based on `base_penalties` and `target_frac_penalty` to
+minimize `target_frac_penalty * abs(frac_at_base - target_frac) + base_penalty`.
+`base_penalties` and `bases` must be the same length.
+"""
+function best_scalebar_size(
+    axis_begin::Real,
+    axis_end::Real,
+    target_frac::AbstractFloat,
+    axis_unit_pow10::Integer = 0;
+    bases = [100, 50, 10, 5, 2, 1],
+    base_penalties = [0, 5, 10, 20, 30, 40],
+    target_frac_penalty = 30
+)
+    @argcheck 0 < target_frac < 1
+    @argcheck length(bases) == length(base_penalties)
+
+    ax_r = axis_end - axis_begin
+    exact_size = target_frac * ax_r
+
+    pow10 = floor(Int, log(10, exact_size))
+    pow10_offset = -3 * floor(Int, pow10 / 3)
+
+    multiplier = 10.0 ^ pow10_offset
+    disp_number = round(Int, exact_size * multiplier)
+    roundeds = nearest_multiple.(disp_number, bases)
+    scaled_fracs = roundeds / (multiplier * ax_r)
+    base_fracs = bases / (multiplier * ax_r)
+    fixed_fracs = edgefix.(scaled_fracs, base_fracs)
+    ok_ndxs = findall(!isequal(nothing), fixed_fracs) # ! and isequal can curry
+    isempty(ok_ndxs) && error("No scalebar candidate sizes survived!")
+    costs =
+        target_frac_penalty * abs.(fixed_fracs[ok_ndxs] .- target_frac) .+
+        base_penalties[ok_ndxs]
+    base_ndx = ok_ndxs[argmin(costs)]
+
+    scalebar_ax_size = fixed_fracs[base_ndx] * ax_r
+    scalebar_units = round(Int, scalebar_ax_size * multiplier)
+    scalebar_prefix = prefix(-pow10_offset + axis_unit_pow10)
+
+    scalebar_ax_size, scalebar_units, scalebar_prefix
+end
+
 function electrode_circles(;kwargs...)
     n_pi = length(PI_XS)
     circles = Vector{PyObject}(undef, n_pi)

@@ -9,7 +9,8 @@ using
     GLTimeseries,
     GLUtilities,
     Missings,
-    PointProcesses
+    PointProcesses,
+    ArgCheck
 
 @static if VERSION >= v"0.7.0-DEV.2575"
     using Distributed, Statistics
@@ -31,6 +32,7 @@ export
     # Functions
     axis_xlim,
     axis_ylim,
+    best_scalebar_size,
     downsamp_patch,
     plot_spacing,
     plot_offsets,
