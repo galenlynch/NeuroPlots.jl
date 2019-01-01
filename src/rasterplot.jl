@@ -359,33 +359,58 @@ function best_scalebar_size(
     scalebar_ax_size, scalebar_units, scalebar_prefix
 end
 
-function electrode_circles(;kwargs...)
-    n_pi = length(PI_XS)
-    circles = Vector{PyObject}(undef, n_pi)
-    for i in 1:n_pi
-        circles[i] = PyPlot.matplotlib[:patches][:Circle](
-            (PI_XS[i], PI_YS[i]), PI_PITCH / 2
-        )
+function electrode_grid(assembly_type::Symbol; kwargs...)
+    if assembly_type == :PI
+        patches = circle_collection(PI_XS, PI_YS, PI_PITCH / 2)
+    elseif assembly_type == :PI_14
+        patches = circle_collection(PI_14_XS, PI_14_YS, PI_PITCH / 2)
+    elseif assembly_type == :GRID
+        patches = rect_collection(FLEX_XS, FLEX_YS, FLEX_PITCH)
+    else
+        error("Unrecognized assembly_type $assembly_type")
     end
+
     PyPlot.matplotlib[:collections][:PatchCollection](
-        circles; match_original = false, kwargs...
+        patches; match_original = false, kwargs...
     )
 end
 
-function electrode_grid(;kwargs...)
-    n_g = length(FLEX_XS)
-    rects = Vector{PyObject}(undef, n_g)
-    for i in 1:n_g
-        rects[i] = PyPlot.matplotlib[:patches][:Rectangle](
-            (FLEX_XS[i] - FLEX_PITCH / 2, FLEX_YS[i] - FLEX_PITCH / 2),
-            FLEX_PITCH,
-            FLEX_PITCH
+function circle_collection(xs, ys, rad)
+    nx = length(xs)
+    @argcheck nx == length(ys)
+    patches = Vector{PyObject}(undef, nx)
+    for i in 1:nx
+        patches[i] = PyPlot.matplotlib[:patches][:Circle]((xs[i], ys[i]), rad)
+    end
+    patches
+end
+
+function rect_collection(xs, ys, dx, dy)
+    nx = length(xs)
+    @argcheck nx == length(ys)
+    patches = Vector{PyObject}(undef, nx)
+    x_off = dx / 2
+    y_off = dy / 2
+    for i in 1:nx
+        patches[i] = PyPlot.matplotlib[:patches][:Rectangle](
+            (xs[i] - x_off, ys[i] - y_off), dx, dy
         )
     end
-    PyPlot.matplotlib[:collections][:PatchCollection](
-        rects; match_original = false, kwargs...
-    )
+    patches
 end
+
+rect_collection(xs, ys, dx) = rect_collection(xs, ys, dx, dx)
+
+const PI_14_XS = [
+    -98.9867, 98.9867, 98.9867, -98.9867, 98.9867, -98.9867,
+    98.9867, 98.9867, -98.9867, 98.9867, -98.9867, 98.9867,
+    98.9867, -98.9867
+]
+const PI_14_YS = [
+    285.75, 400.05, 285.75, 171.45, 171.45, 57.15,
+    57.15, -57.15, -57.15, -171.45, -171.45, -285.75,
+    -400.05, -285.75
+]
 
 const PI_XS = [
     -98.9867, 98.9867, 0.0, 98.9867, -98.9867, 0.0, 98.9867, -98.9867, 0.0,
