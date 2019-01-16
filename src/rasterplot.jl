@@ -282,7 +282,7 @@ function prefix(pow10)
         range == 1 ? "k" :
         range == 2 ? "M" :
         range == 3 ? "G" :
-        range == 4 ? "T" : error("out of range")
+        range == 4 ? "T" : "?"
 end
 
 "Adjust the fraction away from 0 and 1, if possible, otherwise return `nothing`"
@@ -336,7 +336,7 @@ function best_scalebar_size(
     ax_r = axis_end - axis_begin
     exact_size = target_frac * ax_r
 
-    pow10 = floor(Int, log(10, exact_size))
+    pow10 = floor(Int, log(10, exact_size + eps()))
     pow10_offset = -3 * floor(Int, pow10 / 3)
 
     multiplier = 10.0 ^ pow10_offset
