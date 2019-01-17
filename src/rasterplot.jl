@@ -334,27 +334,33 @@ function best_scalebar_size(
     @argcheck length(bases) == length(base_penalties)
 
     ax_r = axis_end - axis_begin
-    exact_size = target_frac * ax_r
+    if ax_r == 0
+        scalebar_ax_size = 0
+        scalebar_units = 0
+        scalebar_prefix = "?"
+    else
+        exact_size = target_frac * ax_r
 
-    pow10 = floor(Int, log(10, exact_size + eps()))
-    pow10_offset = -3 * floor(Int, pow10 / 3)
+        pow10 = floor(Int, log(10, exact_size + eps()))
+        pow10_offset = -3 * floor(Int, pow10 / 3)
 
-    multiplier = 10.0 ^ pow10_offset
-    disp_number = round(Int, exact_size * multiplier)
-    roundeds = nearest_multiple.(disp_number, bases)
-    scaled_fracs = roundeds / (multiplier * ax_r)
-    base_fracs = bases / (multiplier * ax_r)
-    fixed_fracs = edgefix.(scaled_fracs, base_fracs)
-    ok_ndxs = findall(!isequal(nothing), fixed_fracs) # ! and isequal can curry
-    isempty(ok_ndxs) && error("No scalebar candidate sizes survived!")
-    costs =
-        target_frac_penalty * abs.(fixed_fracs[ok_ndxs] .- target_frac) .+
-        base_penalties[ok_ndxs]
-    base_ndx = ok_ndxs[argmin(costs)]
+        multiplier = 10.0 ^ pow10_offset
+        disp_number = round(Int, exact_size * multiplier)
+        roundeds = nearest_multiple.(disp_number, bases)
+        scaled_fracs = roundeds / (multiplier * ax_r)
+        base_fracs = bases / (multiplier * ax_r)
+        fixed_fracs = edgefix.(scaled_fracs, base_fracs)
+        ok_ndxs = findall(!isequal(nothing), fixed_fracs) # ! and isequal can curry
+        isempty(ok_ndxs) && error("No scalebar candidate sizes survived!")
+        costs =
+            target_frac_penalty * abs.(fixed_fracs[ok_ndxs] .- target_frac) .+
+            base_penalties[ok_ndxs]
+        base_ndx = ok_ndxs[argmin(costs)]
 
-    scalebar_ax_size = fixed_fracs[base_ndx] * ax_r
-    scalebar_units = round(Int, scalebar_ax_size * multiplier)
-    scalebar_prefix = prefix(-pow10_offset + axis_unit_pow10)
+        scalebar_ax_size = fixed_fracs[base_ndx] * ax_r
+        scalebar_units = round(Int, scalebar_ax_size * multiplier)
+        scalebar_prefix = prefix(-pow10_offset + axis_unit_pow10)
+    end
 
     scalebar_ax_size, scalebar_units, scalebar_prefix
 end
