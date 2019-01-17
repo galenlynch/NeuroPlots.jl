@@ -274,6 +274,7 @@ nearest_multiple(x, b) = b * round(x / b)
 function prefix(pow10)
     range = floor(Int, pow10 / 3)
     pre =
+        range == -5 ? "f" :
         range == -4 ? "p" :
         range == -3 ? "n" :
         range == -2 ? "µ" :
@@ -282,7 +283,8 @@ function prefix(pow10)
         range == 1 ? "k" :
         range == 2 ? "M" :
         range == 3 ? "G" :
-        range == 4 ? "T" : "?"
+        range == 4 ? "T" :
+        range == 5 ? "P" : "?"
 end
 
 "Adjust the fraction away from 0 and 1, if possible, otherwise return `nothing`"
