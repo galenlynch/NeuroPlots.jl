@@ -163,15 +163,15 @@ function make_plotdata(
 end
 
 function update_artists(ra::ResizeablePatch{<:Any,MPL}, xpt, ypt)
-    ra.baseinfo.artists[1].artist[:set_data](xpt, ypt)
+    ra.baseinfo.artists[1].artist.set_data(xpt, ypt)
 end
 
 function update_artists(ra::ResizeablePatch{<:Any,PQTG}, xpt, ypt)
-    ra.baseinfo.artists[1].artist[:setData](xpt, ypt)
+    ra.baseinfo.artists[1].artist.setData(xpt, ypt)
 end
 
 "Make a line with place-holder data"
 function make_dummy_line(ax::A, plotargs...; plotkwargs...) where
     {P<:MPL, A<:Axis{P}}
-    return Artist{P}(ax.ax[:plot](0, 0, plotargs...; plotkwargs...)[1])
+    return Artist{P}(ax.ax.plot(0, 0, plotargs...; plotkwargs...)[1])
 end

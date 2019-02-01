@@ -249,6 +249,6 @@ function remove(ax::Axis{PQTG}, ras::AbstractVector{<:ResizeableArtist{<:Any, PQ
 end
 
 function remove(ax::Axis{PQTG}, ra::ResizeableArtist{<:Any, PQTG})
-    ax.ax[:removeItem](to_curve(ra))
+    ax.ax.removeItem(to_curve(ra))
     nothing
 end

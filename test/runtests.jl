@@ -23,7 +23,7 @@ const ds = CachingStftPsd(A, wl, fs)
         fillshape = (2,)
         dynamic_tss = fill(dts, fillshape)
 
-        qtplt = pg[:plot]()
+        qtplt = pg.plot()
         vb = get_viewbox(qtplt)
         qtax = Axis{PQTG}(vb)
         ad, qtartists, y_offsets = plot_vertical_spacing(qtax, dynamic_tss)
@@ -55,7 +55,7 @@ const ds = CachingStftPsd(A, wl, fs)
 
     @testset "pyqtgraph" begin
 
-         qtplt = pg[:plot]()
+         qtplt = pg.plot()
          vb = get_viewbox(qtplt)
          qtax = Axis{PQTG}(vb)
 
@@ -93,7 +93,7 @@ const ds = CachingStftPsd(A, wl, fs)
 
         pttimes = rand(20)
         ptamps = rand(20)
-         qtplt = pg[:plot]()
+         qtplt = pg.plot()
          vb = get_viewbox(qtplt)
          qtax = Axis{PQTG}(vb)
 
@@ -107,7 +107,7 @@ const ds = CachingStftPsd(A, wl, fs)
 
         app(qtplt)
 
-         qtplt = pg[:plot]()
+         qtplt = pg.plot()
          vb = get_viewbox(qtplt)
          qtax = Axis{PQTG}(vb)
 
@@ -123,7 +123,7 @@ const ds = CachingStftPsd(A, wl, fs)
         ax = Axis{MPL}(ax)
         try
             rp = downsamp_patch(ax, dts)
-            plt[:show]()
+            plt.show()
         catch
             close()
             rethrow()
@@ -149,13 +149,13 @@ const ds = CachingStftPsd(A, wl, fs)
         try
             dynamic_tss = fill(dts, fillshape)
 
-             qtplt = pg[:plot]()
+             qtplt = pg.plot()
              vb = get_viewbox(qtplt)
              qtax = Axis{PQTG}(vb)
             qtartists = plot_vertical_spacing(qtax, dynamic_tss)
 
             artists = plot_vertical_spacing(ax, dynamic_tss)
-            plt[:show]()
+            plt.show()
         catch
             rethrow()
         end
@@ -165,7 +165,7 @@ const ds = CachingStftPsd(A, wl, fs)
 
         B = sin.(2 * pi * 10 .* (1:npt) ./ fs) .+ 0.1 .* randn(npt)
 
-        qtplt = pg[:plot]()
+        qtplt = pg.plot()
         vb = get_viewbox(qtplt)
         qtax = Axis{PQTG}(vb)
 
@@ -176,7 +176,7 @@ const ds = CachingStftPsd(A, wl, fs)
         ax = Axis{MPL}(ax)
         try
             rspec = resizeable_spectrogram(ax, B, fs)
-            plt[:show]()
+            plt.show()
         catch
             close()
             rethrow()
@@ -186,7 +186,7 @@ const ds = CachingStftPsd(A, wl, fs)
         try
             rspec = resizeable_spectrogram(ax, B, fs, 0, frange = [7, 13])
             colorbar(rspec.baseinfo.artists[1].artist)
-            plt[:show]()
+            plt.show()
         catch
             close()
             rethrow()
@@ -198,7 +198,7 @@ const ds = CachingStftPsd(A, wl, fs)
                 ax, B, fs, 0, frange = [7, 13], clim = [-20, 0]
             )
             colorbar(rspec.baseinfo.artists[1].artist)
-            plt[:show]()
+            plt.show()
         catch
             close()
             rethrow()

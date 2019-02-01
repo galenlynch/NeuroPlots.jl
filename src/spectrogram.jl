@@ -31,7 +31,7 @@ struct ResizeableSpec{T<:AbstractDynamicSpectrogram, P} <: ResizeableArtist{T,P}
         baseinfo::B
     ) where {T<:AbstractDynamicSpectrogram, P<:MPL, B<:RABaseInfo{P}}
         range_check(frange, clim)
-        baseinfo.ax.ax[:autoscale](false, axis = "both")
+        baseinfo.ax.ax.autoscale(false, axis = "both")
         return new(ds, clim, frange, cmap, baseinfo)
     end
     function ResizeableSpec{T,P}(
@@ -44,7 +44,7 @@ struct ResizeableSpec{T<:AbstractDynamicSpectrogram, P} <: ResizeableArtist{T,P}
         range_check(frange, clim)
         r = new(ds, clim, frange, cmap, baseinfo)
         di = DownsampImage(r)
-        di[:setOpts](axisOrder="row-major")
+        di.setOpts(axisOrder="row-major")
         push!(r.baseinfo.artists, Artist{P}(di))
         return r
     end
@@ -183,13 +183,13 @@ function update_artists(
     ra::ResizeableSpec{<:Any, P}, t_start, t_end, f_start, f_end, t_w, f_w, db
 ) where {P<:MPL}
     if ! isempty(ra.baseinfo.artists)
-        ra.baseinfo.artists[1].artist[:remove]()
+        ra.baseinfo.artists[1].artist.remove()
         pop!(ra.baseinfo.artists)
     end
 
     extent = bounding_rect(t_start, t_end, t_w, f_start, f_end, f_w)
     imartist = Artist{P}(
-        ra.baseinfo.ax.ax[:imshow](
+        ra.baseinfo.ax.ax.imshow(
             db;
             origin = "bottom",
             cmap = ra.cmap,
@@ -212,10 +212,10 @@ end
 function update_artists(
     ra::ResizeableSpec{<:Any, P}, t_start, t_end, f_start, f_end, t_w, f_w, db
 ) where {P<:PQTG}
-    ra.baseinfo.artists[1].artist[:setImage](db)
+    ra.baseinfo.artists[1].artist.setImage(db)
     (x_s, x_e, y_s, y_e) = bounding_rect(t_start, t_end, t_w, f_start, f_end, f_w)
-    qtrect = qtc[:QRectF](x_s, y_s, x_e - x_s, y_e - y_s)::PyObject
-    ra.baseinfo.artists[1].artist[:setRect](qtrect)
+    qtrect = qtc.QRectF(x_s, y_s, x_e - x_s, y_e - y_s)::PyObject
+    ra.baseinfo.artists[1].artist.setRect(qtrect)
     nothing
 end
 

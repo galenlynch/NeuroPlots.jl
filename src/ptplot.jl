@@ -101,6 +101,7 @@ struct MergingPoints{T<:DynamicPointBoxer, P<:PlotLib} <: ResizeableArtist{T, P}
         push!(r.baseinfo.artists, Artist{P}(DownsampCurve(
             r, connect = "finite"; plotkwargs...
         )))
+        r.baseinfo.artists[1].artist.setZValue(-1.0)
         r
     end
 end
@@ -216,9 +217,9 @@ function make_plotdata(dp::DynamicPointBoxer, xstart, xend, pixwidth, res)
 end
 
 function update_artists(ra::MergingPoints{<:Any,PQTG}, xpt, ypt, connect)
-    ra.baseinfo.artists[1].artist[:setData](xpt, ypt, connect = connect)
+    ra.baseinfo.artists[1].artist.setData(xpt, ypt, connect = connect)
 end
 
 function update_artists(ra::MergingPoints{<:Any,MPL}, xpt, ypt, args...)
-    ra.baseinfo.artists[1].artist[:set_data](xpt, ypt)
+    ra.baseinfo.artists[1].artist.set_data(xpt, ypt)
 end

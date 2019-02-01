@@ -71,42 +71,42 @@ include("gloss.jl")
 function __init__()
     # Create pyqtgraph subclasses used by this package
     temp_downsampcurve =
-        PyCall.@pydef_object mutable struct DownsampCurve <: pg[:PlotCurveItem]
+        PyCall.@pydef_object mutable struct DownsampCurve <: pg.PlotCurveItem
             function __init__(
                 self::PyObject,
                 resizeablePatch::ResizeableArtist,
                 args...;
                 kwargs...
             )
-                self[:resizeablePatch] = resizeablePatch
-                pg[:PlotCurveItem][:__init__](self, args...; kwargs...)
+                self.resizeablePatch = resizeablePatch
+                pg.PlotCurveItem.__init__(self, args...; kwargs...)
             end
 
             function viewRangeChanged(self::PyObject, args...)
-                axis_lim_changed(self[:resizeablePatch])
+                axis_lim_changed(self.resizeablePatch)
             end
         end
     copy!(DownsampCurve, temp_downsampcurve)
 
     temp_downsampimage =
-        PyCall.@pydef_object mutable struct DownsampImage <: pg[:ImageItem]
+        PyCall.@pydef_object mutable struct DownsampImage <: pg.ImageItem
             function __init__(
                 self::PyObject,
                 resizeableSpec::ResizeableSpec,
                 args...;
                 kwargs...
             )
-                self[:resizeableSpec] = resizeableSpec
-                pg[:ImageItem][:__init__](self, args...; kwargs...)
+                self.resizeableSpec = resizeableSpec
+                pg.ImageItem.__init__(self, args...; kwargs...)
             end
 
             function viewRangeChanged(self::PyObject, args...)
-                axis_lim_changed(self[:resizeableSpec])
+                axis_lim_changed(self.resizeableSpec)
             end
         end
     copy!(DownsampImage, temp_downsampimage)
 
-    grayalpha = matplotlib[:colors][:LinearSegmentedColormap][:from_list](
+    grayalpha = matplotlib.colors.LinearSegmentedColormap.from_list(
         "grayalpha",
         [(0,0,0,0), (0,0,0,1)]
     )

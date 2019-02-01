@@ -63,49 +63,49 @@ function plot_offsets(
 end
 
 function ax_pix_width(ax::A) where {P<:MPL, A<:Axis{P}}
-    fig = ax.ax[:figure]::PyPlot.Figure
-    scale = fig[:dpi_scale_trans][:inverted]()::PyObject
-    bbox = ax.ax[:get_window_extent]()[:transformed](scale)::PyObject
+    fig = ax.ax.figure::PyPlot.Figure
+    scale = fig.dpi_scale_trans.inverted()::PyObject
+    bbox = ax.ax.get_window_extent().transformed(scale)::PyObject
 
-    width = bbox[:width]::Float64
-    dpi = fig[:dpi]::Union{Int, Float64}
+    width = bbox.width::Float64
+    dpi = fig.dpi::Union{Int, Float64}
 
     return ceil(Int, width * dpi)
 end
 
 function ax_pix_width(a::Axis{PQTG})
-    sg = a.ax[:screenGeometry]()::PyObject
-    sg[:width]()::Int
+    sg = a.ax.screenGeometry()::PyObject
+    sg.width()::Int
 end
 
 function axis_limits(ax::A) where {P<:MPL, A<:Axis{P}}
-    ax.ax[:viewLim]::PyObject
+    ax.ax.viewLim::PyObject
 end
 
 function axis_xlim(ax::A) where {P<:MPL, A<:Axis{P}}
     bbox = axis_limits(ax)
-    return (bbox[:xmin]::Float64, bbox[:xmax]::Float64)
+    return (bbox.xmin::Float64, bbox.xmax::Float64)
 end
 
 function axis_xlim(a::Axis{MPL}, xb, xe)
-    a.ax[:set_xlim]((xb, xe))
+    a.ax.set_xlim((xb, xe))
     nothing
 end
 axis_xlim(a::Axis{MPL}, l::NTuple{2, <:Real}) = axis_xlim(a, l[1], l[2])
 
 function axis_ylim(ax::A) where {P<:MPL, A<:Axis{P}}
     bbox = axis_limits(ax)
-    return (bbox[:ymin]::Float64, bbox[:ymax]::Float64)
+    return (bbox.ymin::Float64, bbox.ymax::Float64)
 end
 
 function axis_ylim(a::Axis{MPL}, yb, ye)
-    a.ax[:set_ylim]((yb, ye))
+    a.ax.set_ylim((yb, ye))
     nothing
 end
 axis_ylim(a::Axis{MPL}, l::NTuple{2, <:Real}) = axis_ylim(a, l[1], l[2])
 
 function axis_limits(a::Axis{PQTG})
-    vrange = a.ax[:viewRange]()
+    vrange = a.ax.viewRange()
     r = convert(Array{Float64, 2}, vrange)
     return ((r[1,1], r[1,2]), (r[2,1], r[2,2]))
 end
@@ -121,16 +121,16 @@ function axis_ylim(a::Axis{PQTG})
 end
 
 function setlims(ax::Axis{MPL}, xb, xe, yb, ye)
-        ax.ax[:set_xlim]([xb, xe])
-        ax.ax[:set_ylim]([yb, ye])
+        ax.ax.set_xlim([xb, xe])
+        ax.ax.set_ylim([yb, ye])
 end
 
 function setlims(ax::Axis{PQTG}, xb, xe, yb, ye)
-        ax.ax[:setXRange](xb, xe)
-        ax.ax[:setYRange](yb, ye)
+        ax.ax.setXRange(xb, xe)
+        ax.ax.setYRange(yb, ye)
 end
 
-update_ax(ax::Axis{MPL}) = ax.ax[:figure][:canvas][:draw_idle]()
+update_ax(ax::Axis{MPL}) = ax.ax.figure.canvas.draw_idle()
 update_ax(ax::Axis{PQTG}) = nothing
 
 function plotitem_to_ax(py::PyObject)

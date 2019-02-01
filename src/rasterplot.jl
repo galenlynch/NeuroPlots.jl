@@ -14,17 +14,17 @@ function raster_plot(
     ntrial = length(ticks)
         # Ticks
     raster_coords = make_lc_vertical_coords(ticks)
-    lc = PyPlot.matplotlib[:collections][:LineCollection](
+    lc = PyPlot.matplotlib.collections.LineCollection(
         raster_coords; tick_plot_args...
     )
-    ax[:add_collection](lc)
+    ax.add_collection(lc)
     patch_collections = raster_plot_patches(
         ax, patch_sets, ntrial; patch_plot_args = patch_plot_args
     )
     # Patches
     if top_level
-        ax[:set_xlim]([-pre, post])
-        ax[:set_ylim]([0, ntrial + 1])
+        ax.set_xlim([-pre, post])
+        ax.set_ylim([0, ntrial + 1])
     end
     lc, patch_collections
 end
@@ -46,7 +46,7 @@ function raster_plot_patches(
         patch_collections[i] = make_patch_collection(
             patch_set; patch_plot_args[i]...
         )
-        ax[:add_collection](patch_collections[i])
+        ax.add_collection(patch_collections[i])
     end
     patch_collections
 end
@@ -69,9 +69,9 @@ end
 
 function waveform_overlapped_plot(ax::PyObject, args...; kwargs...)
     lc, basis = waveform_overlapped_collection(ax, args...; kwargs...)
-    ax[:add_collection](lc)
-    ax[:set_xlim]([basis[1], basis[end]])
-    ax[:autoscale](axis = "y")
+    ax.add_collection(lc)
+    ax.set_xlim([basis[1], basis[end]])
+    ax.autoscale(axis = "y")
     lc
 end
 
@@ -95,7 +95,7 @@ function waveform_overlapped_collection(
         basis = basis_conversion * (-half_support:1:half_support) / fs
     end
     spk_points = make_lc_coords(basis, spk_clips)
-    lc = PyPlot.matplotlib[:collections][:LineCollection](
+    lc = PyPlot.matplotlib.collections.LineCollection(
         spk_wavs;
         color = color,
         linewidths = linewidths,
@@ -164,7 +164,7 @@ function make_patch_collection(
             make_rect_patches(int_rep, ycenters[i], height)
         pos += nint[i]
     end
-    PyPlot.matplotlib[:collections][:PatchCollection](
+    PyPlot.matplotlib.collections.PatchCollection(
         rects; match_original = false, kwargs...
     )
 end
@@ -175,7 +175,7 @@ function make_patch_collection(
     ycenter = 1,
     kwargs...
 )
-    PyPlot.matplotlib[:collections][:PatchCollection](
+    PyPlot.matplotlib.collections.PatchCollection(
         make_rect_patches(ints, ycenter, height);
         match_original = false, kwargs...
     )
@@ -193,7 +193,7 @@ function add_labels(
     nx = length(xcenters)
     @compat th = Vector{PyObject}(undef, nx)
     for (i, x) in enumerate(xcenters)
-        th[i] = ax[:text](x, ybase, labelstrs[i]; ha = ha, va = va, kwargs...)
+        th[i] = ax.text(x, ybase, labelstrs[i]; ha = ha, va = va, kwargs...)
     end
     th
 end
@@ -208,7 +208,7 @@ function make_rect_patches(
     n_int = length(ints)
     rects = Vector{PyObject}(undef, n_int)
     for (i, (xb, xe)) in enumerate(ints)
-        rects[i] = PyPlot.matplotlib[:patches][:Rectangle](
+        rects[i] = PyPlot.matplotlib.patches.Rectangle(
             (xb, y_bottom), xe - xb, height
         )
     end
@@ -233,28 +233,28 @@ function matplotlib_scalebar(
 )
     # Make the bar
     dims = horizontal ? (size, 0) : (0, size)
-    art = PyPlot.matplotlib[:patches][:Rectangle]((0,0), dims...; ec = color)
+    art = PyPlot.matplotlib.patches.Rectangle((0,0), dims...; ec = color)
 
     # Make the bar scale with data axes
-    atb = PyPlot.matplotlib[:offsetbox][:AuxTransformBox](ax[:transData])
-    atb[:add_artist](art)
+    atb = PyPlot.matplotlib.offsetbox.AuxTransformBox(ax.transData)
+    atb.add_artist(art)
 
     # Make the text
-    ta = PyPlot.matplotlib[:offsetbox][:TextArea](
+    ta = PyPlot.matplotlib.offsetbox.TextArea(
         label; minimumdescent = false, textprops = textprops
     )
 
     # Join the bar and text together
     if horizontal
-        packer = PyPlot.matplotlib[:offsetbox][:VPacker]
+        packer = PyPlot.matplotlib.offsetbox.VPacker
     else
-        packer = PyPlot.matplotlib[:offsetbox][:HPacker]
+        packer = PyPlot.matplotlib.offsetbox.HPacker
     end
     childs = textfirst ? [ta, atb] : [atb, ta]
     p = packer(children = childs, align = "center", pad = 0, sep = sep)
 
     # Anchor them
-    sb = PyPlot.matplotlib[:offsetbox][ :AnchoredOffsetbox](
+    sb = PyPlot.matplotlib.offsetbox[ :AnchoredOffsetbox](
         loc,
         child = p,
         bbox_to_anchor = axes_pos,
@@ -263,7 +263,7 @@ function matplotlib_scalebar(
     )
 
     # Add them to the axis
-    ax[:add_artist](sb)
+    ax.add_artist(sb)
 
     sb
 end
@@ -378,7 +378,7 @@ function electrode_grid(assembly_type::Symbol; kwargs...)
         error("Unrecognized assembly_type $assembly_type")
     end
 
-    PyPlot.matplotlib[:collections][:PatchCollection](
+    PyPlot.matplotlib.collections.PatchCollection(
         patches; match_original = false, kwargs...
     )
 end
@@ -388,7 +388,7 @@ function circle_collection(xs, ys, rad)
     @argcheck nx == length(ys)
     patches = Vector{PyObject}(undef, nx)
     for i in 1:nx
-        patches[i] = PyPlot.matplotlib[:patches][:Circle]((xs[i], ys[i]), rad)
+        patches[i] = PyPlot.matplotlib.patches.Circle((xs[i], ys[i]), rad)
     end
     patches
 end
@@ -400,7 +400,7 @@ function rect_collection(xs, ys, dx, dy)
     x_off = dx / 2
     y_off = dy / 2
     for i in 1:nx
-        patches[i] = PyPlot.matplotlib[:patches][:Rectangle](
+        patches[i] = PyPlot.matplotlib.patches.Rectangle(
             (xs[i] - x_off, ys[i] - y_off), dx, dy
         )
     end
