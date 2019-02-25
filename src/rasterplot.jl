@@ -126,11 +126,23 @@ function make_lc_coords(
 )
     nrep = length(ys)
     nbasis = length(xs)
-    @compat out = Array{Float32}(undef, nrep, nbasis, 2)
+    @compat out = Array{Float32, 3}(undef, nrep, nbasis, 2)
     out[:, :, 1] .= reshape(xs, 1, nbasis)
     for repno = 1:nrep
         out[repno, :, 2] = ys[repno]
     end
+    out
+end
+
+function make_lc_coords(
+    xs::Union{AbstractVector, AbstractRange},
+    ys::AbstractMatrix
+)
+    nrep = size(ys, 2)
+    nbasis = length(xs)
+    @compat out = Array{Float32, 3}(undef, nrep, nbasis, 2)
+    out[:, :, 1] .= reshape(xs, 1, nbasis)
+    out[:, :, 2] = permutedims(ys)
     out
 end
 
