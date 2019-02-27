@@ -50,7 +50,9 @@ export
     make_lc_coords,
     electrode_circles,
     electrode_grid,
-    force_redraw
+    force_redraw,
+    glbar,
+    histplot
 
 
 const DownsampCurve = PyNULL()
@@ -66,6 +68,7 @@ include("verticallyspaced.jl")
 include("spectrogram.jl")
 include("ptplot.jl")
 include("rasterplot.jl")
+include("histplot.jl")
 include("gloss.jl")
 
 function __init__()
