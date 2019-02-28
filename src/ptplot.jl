@@ -24,7 +24,11 @@ function point_boxes_multi(
     director::Union{Missing, ArtDirector} = missing,
     listen_ax::Vector{A} = [ax],
     toplevel::Bool = true,
-    cluster_ids::AbstractVector{<:Integer} = Int[],
+    cluster_ids::Union{
+        AbstractVector{<:Integer},
+        AbstractVector{<:AbstractString}
+    } = String[],
+    pens::AbstractVector = String[],
     kwargs...
 ) where A<:Axis
     np = length(pts)
@@ -33,21 +37,35 @@ function point_boxes_multi(
         "Cluster ids not the right size"
     ))
     usename = ! isempty(cluster_ids)
-    name_karg = usename ? ((:name, string(cluster_ids[1])),) : ()
+    if eltype(cluster_ids) <: Integer
+        spk_names = string.(cluster_ids)
+    else
+        spk_names = cluster_ids
+    end
+    usepens = ! isempty(pens)
+    pen_karg = usepens ? Dict(:pen => pens[1]) : Dict{Symbol, String}()
+    name_karg = usename ? ((:name, spk_names[1]),) : ()
     rmp_first = MergingPoints(
         ax, pts[1], min_width;
         pen = def_line_colors[1],
-        name_karg..., kwargs...
+        name_karg...,
+        pen_karg...,
+        kwargs...
     )
     @compat rmps = Vector{typeof(rmp_first)}(undef, np)
     rmps[1] = rmp_first
     nc = length(def_line_colors)
     @inbounds for i in 2:np
-        loop_name_karg = usename ? ((:name, string(cluster_ids[i])),) : ()
+        loop_name_karg = usename ? ((:name, spk_names[i]),) : ()
+        loop_pen_karg = ifelse(
+            usepens, Dict(:pen => pens[i]), Dict{Symbol, String}()
+        )
         rmps[i] = MergingPoints(
             ax, pts[i], min_width;
             pen = def_line_colors[ndx_wrap(i, nc)],
-            loop_name_karg..., kwargs...
+            loop_name_karg...,
+            loop_pen_karg...,
+            kwargs...
         )
     end
     if ismissing(director)

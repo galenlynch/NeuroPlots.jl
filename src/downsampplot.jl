@@ -171,7 +171,29 @@ function update_artists(ra::ResizeablePatch{<:Any,PQTG}, xpt, ypt)
 end
 
 "Make a line with place-holder data"
-function make_dummy_line(ax::A, plotargs...; plotkwargs...) where
+function make_dummy_line(
+    ax::A, plotargs...;
+    name = nothing,
+    pen = nothing,
+    plotkwargs...
+) where
     {P<:MPL, A<:Axis{P}}
-    return Artist{P}(ax.ax.plot(0, 0, plotargs...; plotkwargs...)[1])
+    label_karg = ifelse(
+        name == nothing,
+        Dict{Symbol, String}(),
+        Dict(:label => name)
+    )
+    color_karg = ifelse(
+        pen == nothing,
+        Dict{Symbol, String}(),
+        Dict(:color => pen)
+    )
+    return Artist{P}(
+        ax.ax.plot(
+            0, 0, plotargs...;
+            label_karg...,
+            color_karg...,
+            plotkwargs...
+        )[1]
+    )
 end

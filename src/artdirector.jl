@@ -144,15 +144,15 @@ end
 
 function redraw(
     ad::ArtDirector,
-    artist_to_redraw::AbstractVector{<:ResizeableArtist},
+    artists_to_redraw::AbstractVector{<:ResizeableArtist},
     xstart,
     xend,
     limwidth,
     limcenter
 )
     nra = length(artists_to_redraw)
-    px_artists = Vector{Int}()
-    px_data_widths = Vector{Float64}()
+    px_artists = Vector{Int}(undef, nra)
+    px_data_widths = Vector{Float64}(undef, nra)
     for (ra_no, ra) in enumerate(artists_to_redraw)
         npx = ax_pix_width(baseinfo(ra).ax)
         px_data_widths[ra_no] = (xend - xstart) / npx
@@ -177,23 +177,19 @@ function redraw(
     end
 end
 
-function maybe_redraw(
-    ad::ArtDirector,
-    xstart,
-    xend,
-    npx::T
-) where T<:Integer
-    artists_to_redraw = similar(ad.artists, 0)
+function maybe_redraw(ad::ArtDirector, xstart, xend)
     limwidth = xend - xstart
     limcenter = (xend + xstart) / 2
-    px_width = (xend - xstart) / npx
-    px_artists = Vector{T}()
+    artists_to_redraw = similar(ad.artists)
+    nout = 0
     for ra in ad.artists
         if artist_should_redraw(ra, xstart, xend, limwidth, limcenter)
-            push!(artists_to_redraw, ra)
+            nout += 1
+            artists_to_redraw[nout] = ra
         end
     end
-    redraw_artists(ad, artists_to_redraw, xstart, xend, limwidth, limcenter)
+    resize!(artists_to_redraw, nout)
+    redraw(ad, artists_to_redraw, xstart, xend, limwidth, limcenter)
 end
 
 function remove(ax::Axis{PQTG}, ras::ArtDirector{PQTG, <:Any})
