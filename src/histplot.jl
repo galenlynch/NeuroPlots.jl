@@ -60,7 +60,6 @@ function glbar(
     outs
 end
 
-
 glbar(xs::XType, args...; kwargs...) = glbar(gca(), xs, args...; kwargs...)
 
 function histplot(
