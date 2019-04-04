@@ -11,3 +11,10 @@ function qt_subplots()
 
     win, pn, vb_n, ax_n, ps, vb_s, ax_s
 end
+
+function convenient_plot_window()
+    win = plotwindow()
+    vb = get_viewbox(win)
+    ax = Axis{PQTG}(vb)
+    win, ax
+end

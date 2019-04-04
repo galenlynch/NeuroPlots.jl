@@ -42,6 +42,7 @@ export
     point_boxes_multi,
     resizeable_spectrogram,
     qt_subplots,
+    convenient_plot_window,
     remove,
     raster_plot,
     add_labels,
