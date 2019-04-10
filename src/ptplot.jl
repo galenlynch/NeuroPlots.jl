@@ -36,6 +36,9 @@ function point_boxes_multi(
     isempty(cluster_ids) || length(cluster_ids) == np || throw(ArgumentError(
         "Cluster ids not the right size"
     ))
+    isempty(pens) || length(pens) == np || throw(ArgumentError(
+        "Cluster ids not the right size"
+    ))
     usename = ! isempty(cluster_ids)
     if eltype(cluster_ids) <: Integer
         spk_names = string.(cluster_ids)
@@ -57,9 +60,7 @@ function point_boxes_multi(
     nc = length(def_line_colors)
     @inbounds for i in 2:np
         loop_name_karg = usename ? ((:name, spk_names[i]),) : ()
-        loop_pen_karg = ifelse(
-            usepens, Dict(:pen => pens[i]), Dict{Symbol, String}()
-        )
+        loop_pen_karg = usepens ? Dict(:pen => pens[i]) : Dict{Symbol, String}()
         rmps[i] = MergingPoints(
             ax, pts[i], min_width;
             pen = def_line_colors[ndx_wrap(i, nc)],
