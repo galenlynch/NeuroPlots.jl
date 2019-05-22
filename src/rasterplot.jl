@@ -267,7 +267,7 @@ function matplotlib_scalebar(
     p = packer(children = childs, align = "center", pad = 0, sep = sep)
 
     # Anchor them
-    sb = PyPlot.matplotlib.offsetbox[ :AnchoredOffsetbox](
+    sb = PyPlot.matplotlib.offsetbox.AnchoredOffsetbox(
         loc,
         child = p,
         bbox_to_anchor = axes_pos,
@@ -391,6 +391,8 @@ function electrode_grid(assembly_type::Symbol; kwargs...)
         patches = circle_collection(
             HARBI_XS, HARBI_YS, HARBI_PITCH / 2
         )
+    elseif assembly_type == :DMITRIY
+        patches = circle_collection(DMITRIY_XS, DMITRIY_YS, PI_PITCH / 2)
     else
         error("Unrecognized assembly_type $assembly_type")
     end
@@ -506,6 +508,9 @@ function pack_points!(orig_xy, dia)
     end
     @show orig_xy
 end
+
+const DMITRIY_XS = [-114.3, 0.0, 114.3]
+const DMITRIY_YS = [0.0, 0.0, 0.0]
 
 const PI_14_XS = [
     -98.9867, 98.9867, 98.9867, -98.9867, 98.9867, -98.9867,
