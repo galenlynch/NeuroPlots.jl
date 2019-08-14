@@ -145,16 +145,17 @@ function best_scalebar_size(
     scalebar_ax_size, scalebar_units, scalebar_prefix
 end
 
-function make_lc_vertical_coords(xs::AbstractVector{<:AbstractVector{<:Number}})
+function make_lc_vertical_coords(xs::AbstractVector{<:AbstractVector{<:Number}}, pitch, offset, height)
     nrep = length(xs)
     nsp = length.(xs)
     total_sp = sum(nsp)
-    @compat outs = Array{Float32}(undef, total_sp, 2, 2)
+    @compat outs = Array{Float32, 3}(undef, total_sp, 2, 2)
     pos = 1
     for repno = 1:nrep
         this_nsp = nsp[repno]
+        this_ycenter = offset + (repno - 1) * pitch
         outs[pos:(pos + this_nsp - 1), :, :] = vertical_line_coords(
-            xs[repno], repno
+            xs[repno], this_ycenter, height
         )
         pos += this_nsp
     end
