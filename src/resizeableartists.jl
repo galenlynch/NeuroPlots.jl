@@ -252,3 +252,10 @@ function remove(ax::Axis{PQTG}, ra::ResizeableArtist{<:Any, PQTG})
     ax.ax.removeItem(to_curve(ra))
     nothing
 end
+
+function remove(ax::Axis{MPL}, ra::ResizeableArtist{<:Any, MPL})
+    ax == ra.baseinfo.ax || throw(ArgumentError("Axis did not match"))
+    for a in ra.baseinfo.artists
+        a.artist.remove()
+    end
+end
