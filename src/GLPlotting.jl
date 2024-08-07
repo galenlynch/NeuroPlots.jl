@@ -127,7 +127,7 @@ function __init__()
         "grayalpha",
         [(0,0,0,0), (0,0,0,1)]
     )
-    register_cmap("grayalpha", grayalpha)
+    matplotlib.colormaps.register(grayalpha, name="grayalpha")
 
     copy!(py_gc, pyimport("gc"))
 end

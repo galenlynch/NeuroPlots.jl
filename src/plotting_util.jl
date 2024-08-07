@@ -19,7 +19,7 @@ function matplotlib_scalebar(
 
     # Make the text
     ta = PyPlot.matplotlib.offsetbox.TextArea(
-        label; minimumdescent = false, textprops = textprops
+        label; textprops = textprops
     )
 
     # Join the bar and text together
