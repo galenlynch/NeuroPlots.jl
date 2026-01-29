@@ -1,5 +1,5 @@
-const XType = Union{AbstractVector, AbstractRange}
-const MplAxType = Union{PyObject, Axis{MPL}}
+const XType = Union{AbstractVector,AbstractRange}
+const MplAxType = Union{PyObject,Axis{MPL}}
 
 # Assumes regular x
 function glbar(
@@ -8,7 +8,7 @@ function glbar(
     ys::AbstractVector{<:Number};
     align_center::Bool = true,
     relative_width::Real = 1,
-    plot_kwargs...
+    plot_kwargs...,
 )
     length(xs) >= 2 || error("Lazy coding")
     0 <= relative_width <= 1 || throw(ArgumentError("relative_width is wrong"))
@@ -26,7 +26,7 @@ function glbar(
     ys::AbstractVector{<:AbstractVector{<:Number}};
     colors = nothing,
     labels = nothing,
-    plot_kwargs...
+    plot_kwargs...,
 )
     nseries = length(ys)
     if colors != nothing && length(colors) != nseries
@@ -39,21 +39,22 @@ function glbar(
     outs = Vector{Tuple{Vararg{PyObject}}}(undef, nseries)
     for i = 1:nseries
         if colors == nothing
-            color_kwarg =  Dict{Symbol, Any}()
+            color_kwarg = Dict{Symbol,Any}()
         else
             color_kwarg = Dict(:color => colors[i])
         end
         if labels == nothing
-            label_kwarg =  Dict{Symbol, Any}()
+            label_kwarg = Dict{Symbol,Any}()
         else
             label_kwarg = Dict(:label => labels[i])
         end
         outs[i] = glbar(
-            xs, ys[i];
+            xs,
+            ys[i];
             bottom = bottoms,
             color_kwarg...,
             label_kwarg...,
-            plot_kwargs...
+            plot_kwargs...,
         )
         bottoms .+= ys[i]
     end
@@ -63,18 +64,20 @@ end
 glbar(xs::XType, args...; kwargs...) = glbar(gca(), xs, args...; kwargs...)
 
 function histplot(
-    ax::MplAxType, bin_edges::XType, ys;
+    ax::MplAxType,
+    bin_edges::XType,
+    ys;
     adjust_lims::Bool = true,
     relative_width = 1,
-    kwargs...
+    kwargs...,
 )
     ret = glbar(
         ax,
-        bin_edges[1:end-1],
+        bin_edges[1:(end-1)],
         ys;
         relative_width = relative_width,
         align_center = false,
-        kwargs...
+        kwargs...,
     )
     adjust_lims && ax.set_xlim(bin_edges[1], bin_edges[end])
     ret

@@ -24,7 +24,7 @@ function swarm_points!(orig_xy::AbstractMatrix, dia::Number)
         while pos <= np && orig_xy[:, off] == orig_xy[:, pos]
             pos += 1
         end
-        pack_points!(view(orig_xy, :, off:pos - 1), dia)
+        pack_points!(view(orig_xy, :, off:(pos-1)), dia)
         off = pos
     end
     orig_xy

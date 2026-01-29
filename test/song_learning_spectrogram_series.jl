@@ -17,7 +17,7 @@ f, axs = subplots(nf, 1, sharex = true, figsize = figsize, dpi = figdpi)
 gl_axs = Axis{MPL}.(axs)
 
 rspecs = Vector{ResizeableArtist}(undef, nf)
-sb_f = Vector{Union{Nothing, PyObject}}(undef, nf)
+sb_f = Vector{Union{Nothing,PyObject}}(undef, nf)
 sb_t = similar(sb_f)
 sig_l = Vector{Float64}(undef, nf)
 
