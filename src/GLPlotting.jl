@@ -1,16 +1,8 @@
 __precompile__()
 module GLPlotting
 
-using
-    Compat,
-    PyQtGraph,
-    PyPlot,
-    PyCall,
-    GLTimeseries,
-    GLUtilities,
-    Missings,
-    PointProcesses,
-    ArgCheck
+using Compat,
+    PyQtGraph, PyPlot, PyCall, GLTimeseries, GLUtilities, Missings, PointProcesses, ArgCheck
 
 @static if VERSION >= v"0.7.0-DEV.2575"
     using Distributed, Statistics
@@ -94,7 +86,7 @@ function __init__()
                 self::PyObject,
                 resizeablePatch::ResizeableArtist,
                 args...;
-                kwargs...
+                kwargs...,
             )
                 self.resizeablePatch = resizeablePatch
                 pg.PlotCurveItem.__init__(self, args...; kwargs...)
@@ -106,30 +98,24 @@ function __init__()
         end
     copy!(DownsampCurve, temp_downsampcurve)
 
-    temp_downsampimage =
-        PyCall.@pydef_object mutable struct DownsampImage <: pg.ImageItem
-            function __init__(
-                self::PyObject,
-                resizeableSpec::ResizeableSpec,
-                args...;
-                kwargs...
-            )
-                self.resizeableSpec = resizeableSpec
-                pg.ImageItem.__init__(self, args...; kwargs...)
-            end
-
-            function viewRangeChanged(self::PyObject, args...)
-                axis_lim_changed(self.resizeableSpec)
-            end
+    temp_downsampimage = PyCall.@pydef_object mutable struct DownsampImage <: pg.ImageItem
+        function __init__(self::PyObject, resizeableSpec::ResizeableSpec, args...; kwargs...)
+            self.resizeableSpec = resizeableSpec
+            pg.ImageItem.__init__(self, args...; kwargs...)
         end
+
+        function viewRangeChanged(self::PyObject, args...)
+            axis_lim_changed(self.resizeableSpec)
+        end
+    end
     copy!(DownsampImage, temp_downsampimage)
 
     copy!(mpl, pyimport("matplotlib"))
     grayalpha = mpl.colors.LinearSegmentedColormap.from_list(
         "grayalpha",
-        [(0,0,0,0), (0,0,0,1)]
+        [(0, 0, 0, 0), (0, 0, 0, 1)],
     )
-    mpl.colormaps.register(grayalpha, name="grayalpha")
+    mpl.colormaps.register(grayalpha, name = "grayalpha")
 
     copy!(py_gc, pyimport("gc"))
 end

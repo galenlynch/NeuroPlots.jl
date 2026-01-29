@@ -14,4 +14,3 @@ end
 struct GView{P<:PlotLib}
     gview::PyObject
 end
-
